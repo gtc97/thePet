@@ -156,7 +156,7 @@ async function handleToggleArchive() {
 .pet-name { font-size: 40rpx; font-weight: bold; color: #303133; display: block; }
 .pet-breed { font-size: 26rpx; color: #909399; display: block; margin-top: 4rpx; }
 .privacy-badge { display: inline-block; margin-top: 8rpx; font-size: 22rpx; padding: 4rpx 16rpx; border-radius: 20rpx; }
-.privacy-badge.public { background: #ecf5ff; color: #409EFF; }
+.privacy-badge.public { background: var(--theme-primary-light); color: var(--theme-primary); }
 .privacy-badge.private { background: #fef0f0; color: #F56C6C; }
 .stats-bar { display: flex; background: #fff; margin: 16rpx 0; padding: 24rpx 0; }
 .stat-item { flex: 1; text-align: center; }
@@ -176,6 +176,6 @@ async function handleToggleArchive() {
 .quick-icon { font-size: 40rpx; display: block; margin-bottom: 8rpx; }
 .quick-text { font-size: 22rpx; color: #606266; }
 .action-btns { display: flex; gap: 20rpx; }
-.action-btn { flex: 1; text-align: center; padding: 20rpx; background: #ecf5ff; border-radius: 12rpx; font-size: 26rpx; color: #409EFF; }
+.action-btn { flex: 1; text-align: center; padding: 20rpx; background: var(--theme-primary-light); border-radius: 12rpx; font-size: 26rpx; color: var(--theme-primary); }
 .action-btn.warn { background: #fef0f0; color: #F56C6C; }
 </style>

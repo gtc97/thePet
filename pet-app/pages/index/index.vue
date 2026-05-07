@@ -70,7 +70,7 @@ function navigateTo(url) {
   padding-bottom: 40rpx;
 }
 .header {
-  background: linear-gradient(135deg, #409EFF, #67C23A);
+  background: var(--theme-gradient-vertical);
   padding: 60rpx 40rpx 40rpx;
   color: #fff;
 }
@@ -121,7 +121,7 @@ function navigateTo(url) {
 }
 .prompt-text {
   font-size: 28rpx;
-  color: #409EFF;
+  color: var(--theme-primary);
 }
 .prompt-arrow {
   color: #409EFF;

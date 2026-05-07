@@ -1,34 +1,141 @@
-/* 主题色 */
-$primary-color: #409EFF;
+/* ========================================
+   thePet 全局公共样式 & 主题系统
+   默认主题色：黄棕色（暖棕宠物风格）
+   用户可在「个人中心→设置」自定义主题色
+   ======================================== */
+
+/* ── 主题色 CSS 变量（动态可切换） ── */
+page {
+  --theme-primary: #C8956C;
+  --theme-primary-light: #F5EDE3;
+  --theme-primary-dark: #A0724A;
+  --theme-gradient: linear-gradient(135deg, #C8956C, #D4A76A);
+  --theme-gradient-vertical: linear-gradient(180deg, #D4A76A, #C8956C);
+
+  /* 功能色 */
+  --color-success: #67C23A;
+  --color-warning: #E6A23C;
+  --color-danger: #F56C6C;
+  --color-info: #909399;
+
+  /* 文字色 */
+  --text-primary: #303133;
+  --text-regular: #606266;
+  --text-secondary: #909399;
+  --text-placeholder: #C0C4CC;
+  --text-white: #FFFFFF;
+
+  /* 背景色 */
+  --bg-page: #F5F7FA;
+  --bg-white: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-input: #F5F7FA;
+
+  /* 边框 */
+  --border-color: #DCDFE6;
+  --border-radius: 12rpx;
+  --border-radius-lg: 16rpx;
+  --border-radius-round: 48rpx;
+
+  /* 阴影 */
+  --shadow-sm: 0 2rpx 8rpx rgba(0,0,0,0.06);
+  --shadow-md: 0 4rpx 16rpx rgba(0,0,0,0.1);
+  --shadow-lg: 0 8rpx 24rpx rgba(0,0,0,0.12);
+
+  /* 间距 */
+  --spacing-xs: 8rpx;
+  --spacing-sm: 16rpx;
+  --spacing-md: 24rpx;
+  --spacing-lg: 32rpx;
+  --spacing-xl: 48rpx;
+
+  /* 字号 */
+  --font-xs: 22rpx;
+  --font-sm: 26rpx;
+  --font-md: 28rpx;
+  --font-lg: 32rpx;
+  --font-xl: 36rpx;
+  --font-xxl: 44rpx;
+
+  /* 全局字体 */
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--font-md);
+  color: var(--text-primary);
+  line-height: 1.5;
+  background-color: var(--bg-page);
+}
+
+/* ── SCSS 变量（编译时使用） ── */
+$primary-color: #C8956C;
+$primary-light: #F5EDE3;
+$primary-dark: #A0724A;
 $success-color: #67C23A;
 $warning-color: #E6A23C;
 $danger-color: #F56C6C;
 $info-color: #909399;
-
-/* 文字 */
 $text-primary: #303133;
 $text-regular: #606266;
 $text-secondary: #909399;
 $text-placeholder: #C0C4CC;
-
-/* 边框 */
 $border-color: #DCDFE6;
-$border-radius: 8px;
-
-/* 背景 */
-$bg-color: #F5F7FA;
+$bg-page: #F5F7FA;
 $bg-white: #FFFFFF;
-
-/* 间距 */
 $spacing-xs: 8rpx;
 $spacing-sm: 16rpx;
 $spacing-md: 24rpx;
 $spacing-lg: 32rpx;
 $spacing-xl: 48rpx;
-
-/* 字体大小 */
 $font-xs: 22rpx;
 $font-sm: 26rpx;
 $font-md: 28rpx;
 $font-lg: 32rpx;
 $font-xl: 36rpx;
+
+/* ── 预设主题配色方案 ── */
+/* 可通过 JS 动态修改 CSS 变量来实现主题切换 */
+
+/* 黄棕色（默认） */
+.theme-warm { --theme-primary: #C8956C; --theme-primary-light: #F5EDE3; --theme-primary-dark: #A0724A; }
+
+/* 天蓝色 */
+.theme-blue { --theme-primary: #409EFF; --theme-primary-light: #ECF5FF; --theme-primary-dark: #337ECC; }
+
+/* 草绿色 */
+.theme-green { --theme-primary: #67C23A; --theme-primary-light: #F0F9EB; --theme-primary-dark: #529B2E; }
+
+/* 樱花粉 */
+.theme-pink { --theme-primary: #F0989B; --theme-primary-light: #FEF0F1; --theme-primary-dark: #D07A7D; }
+
+/* 深紫 */
+.theme-purple { --theme-primary: #9B7EC4; --theme-primary-light: #F3EFF9; --theme-primary-dark: #7C65A0; }
+
+/* ── 公共工具类 ── */
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.text-ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.text-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ── 公共卡片样式 ── */
+.card { background: var(--bg-white); border-radius: var(--border-radius); padding: var(--spacing-md); box-shadow: var(--shadow-sm); margin: var(--spacing-sm) var(--spacing-lg); }
+
+/* ── 公共按钮样式 ── */
+.btn-primary { background: var(--theme-primary); color: #fff; text-align: center; padding: 24rpx; border-radius: var(--border-radius-round); font-size: var(--font-lg); font-weight: 600; }
+.btn-outline { border: 2rpx solid var(--theme-primary); color: var(--theme-primary); text-align: center; padding: 22rpx; border-radius: var(--border-radius-round); font-size: var(--font-lg); background: transparent; }
+.btn-danger { background: var(--color-danger); color: #fff; text-align: center; padding: 24rpx; border-radius: var(--border-radius-round); font-size: var(--font-lg); }
+
+/* ── 公共表单样式 ── */
+.form-input { width: 100%; height: 88rpx; border: 2rpx solid var(--border-color); border-radius: var(--border-radius); padding: 0 var(--spacing-md); font-size: var(--font-md); background: var(--bg-white); box-sizing: border-box; }
+.form-textarea { width: 100%; min-height: 160rpx; border: 2rpx solid var(--border-color); border-radius: var(--border-radius); padding: var(--spacing-sm) var(--spacing-md); font-size: var(--font-md); box-sizing: border-box; }
+.form-label { font-size: var(--font-md); color: var(--text-primary); display: block; margin-bottom: var(--spacing-xs); }
+
+/* ── 公共头像样式 ── */
+.avatar-sm { width: 60rpx; height: 60rpx; border-radius: 50%; background: #e8e8e8; }
+.avatar-md { width: 100rpx; height: 100rpx; border-radius: 50%; background: #e8e8e8; }
+.avatar-lg { width: 140rpx; height: 140rpx; border-radius: 50%; background: #e8e8e8; }
+
+/* ── 公共标签 ── */
+.tag { display: inline-block; padding: 4rpx 16rpx; border-radius: 20rpx; font-size: var(--font-xs); }
+.tag-primary { background: var(--theme-primary-light); color: var(--theme-primary); }
+.tag-success { background: #F0F9EB; color: var(--color-success); }
+.tag-warning { background: #FDF6EC; color: var(--color-warning); }
+.tag-danger { background: #FEF0F0; color: var(--color-danger); }

@@ -68,10 +68,10 @@ function navigateTo(url) {
 .page-pet-list { padding-bottom: 40rpx; }
 .header { display: flex; justify-content: space-between; align-items: center; padding: 24rpx 32rpx; }
 .title { font-size: 36rpx; font-weight: bold; color: #303133; }
-.add-btn { background: #409EFF; color: #fff; padding: 12rpx 28rpx; border-radius: 32rpx; font-size: 26rpx; }
+.add-btn { background: var(--theme-primary); color: #fff; padding: 12rpx 28rpx; border-radius: 32rpx; font-size: 26rpx; }
 .filter-tabs { display: flex; padding: 0 32rpx 20rpx; gap: 24rpx; }
 .tab { font-size: 28rpx; color: #909399; padding: 8rpx 0; }
-.tab.active { color: #409EFF; font-weight: 600; border-bottom: 4rpx solid #409EFF; }
+.tab.active { color: var(--theme-primary); font-weight: 600; border-bottom: 4rpx solid var(--theme-primary); }
 .pet-list { padding: 0 32rpx; }
 .pet-card { display: flex; align-items: center; background: #fff; padding: 24rpx; border-radius: 12rpx; margin-bottom: 16rpx; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
 .pet-avatar { width: 100rpx; height: 100rpx; border-radius: 50%; margin-right: 20rpx; background: #f0f0f0; }
@@ -80,7 +80,7 @@ function navigateTo(url) {
 .pet-breed { font-size: 24rpx; color: #909399; }
 .pet-tags { display: flex; flex-direction: column; gap: 8rpx; align-items: flex-end; }
 .privacy-tag { font-size: 22rpx; padding: 4rpx 12rpx; border-radius: 20rpx; }
-.privacy-tag.public { background: #ecf5ff; color: #409EFF; }
+.privacy-tag.public { background: var(--theme-primary-light); color: var(--theme-primary); }
 .privacy-tag.private { background: #fef0f0; color: #F56C6C; }
 .archive-tag { font-size: 22rpx; background: #f5f7fa; color: #909399; padding: 4rpx 12rpx; border-radius: 20rpx; }
 </style>

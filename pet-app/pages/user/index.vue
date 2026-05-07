@@ -119,7 +119,7 @@ function handleLogout() {
 <style scoped lang="scss">
 .page-user { padding-bottom: 40rpx; }
 .user-header {
-  background: linear-gradient(135deg, #409EFF, #67C23A);
+  background: var(--theme-gradient-vertical);
   padding: 80rpx 32rpx 40rpx;
   display: flex;
   align-items: center;
@@ -136,7 +136,7 @@ function handleLogout() {
   overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 .switch-tab { flex: 1; text-align: center; padding: 24rpx; font-size: 28rpx; color: #606266; }
-.switch-tab.active { color: #409EFF; font-weight: 600; background: #ecf5ff; }
+.switch-tab.active { color: var(--theme-primary); font-weight: 600; background: var(--theme-primary-light); }
 .menu-card { background: #fff; margin: 16rpx 32rpx; border-radius: 12rpx; overflow: hidden; }
 .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 28rpx 24rpx; border-bottom: 1rpx solid #f0f0f0; }
 .menu-item:last-child { border-bottom: none; }

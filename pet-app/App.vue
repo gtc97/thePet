@@ -1,29 +1,26 @@
 <script setup>
-import { onLaunch, onShow } from '@dcloudio/uni-app';
+import { onLaunch } from '@dcloudio/uni-app';
 
 onLaunch(() => {
   console.log('thePet App Launched');
-  // Check login status
-  const token = uni.getStorageSync('access_token');
-  if (!token) {
-    // Not logged in — user can browse public content
+  // 应用用户保存的主题
+  const savedTheme = uni.getStorageSync('theme') || 'warm';
+  // 通过全局className控制主题
+  if (typeof document !== 'undefined') {
+    document.documentElement.className = `theme-${savedTheme}`;
   }
-});
-
-onShow(() => {
-  console.log('thePet App Show');
+  // 小程序通过page样式变量控制（在uni.scss中定义）
 });
 </script>
 
 <style lang="scss">
 @import '@/uni.scss';
 
-/* 全局样式 */
+/* 全局页面基础样式 */
 page {
-  background-color: #f5f7fa;
-  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 14px;
-  color: #303133;
+  background-color: var(--bg-page);
+  font-size: var(--font-md);
+  color: var(--text-primary);
   line-height: 1.5;
 }
 </style>
