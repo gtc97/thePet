@@ -1,0 +1,15 @@
+{
+  "name": "thepet",
+  "version": "1.0.0",
+  "private": true,
+  "description": "宠物档案记录与上门喂养多端应用",
+  "scripts": {
+    "dev:server": "cd pet-server && npm run dev",
+    "dev:admin": "cd pet-admin && npm run dev",
+    "build:server": "cd pet-server && npm run build",
+    "build:admin": "cd pet-admin && npm run build",
+    "db:migrate": "cd pet-server && npx prisma migrate dev",
+    "db:generate": "cd pet-server && npx prisma generate",
+    "db:studio": "cd pet-server && npx prisma studio"
+  }
+}

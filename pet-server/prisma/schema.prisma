@@ -1,0 +1,539 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ───────────────────────────────────────────────────
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum PetGender {
+  MALE
+  FEMALE
+  UNKNOWN
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum PrivacyLevel {
+  PUBLIC
+  PRIVATE
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  DISPUTE
+}
+
+enum DepositStatus {
+  UNPAID
+  PAID
+  FROZEN
+  REFUNDING
+  REFUNDED
+  FORFEITED
+}
+
+enum DisputeStatus {
+  PENDING
+  REVIEWING
+  RESOLVED
+  REJECTED
+}
+
+enum PushType {
+  SYSTEM
+  ORDER
+  CHAT
+  REVIEW
+  DISPUTE
+  QUALIFICATION
+}
+
+// ─── TABLES ──────────────────────────────────────────────────
+
+model User {
+  id          Int        @id @default(autoincrement())
+  openid      String?    @unique @db.VarChar(64)
+  unionid     String?    @db.VarChar(64)
+  phone       String?    @unique @db.VarChar(20)
+  password    String?    @db.VarChar(128)
+  nickname    String     @db.VarChar(50)
+  avatar      String?    @db.VarChar(500)
+  roles       Json       @default("[\"PET_OWNER\"]")
+  status      UserStatus @default(ACTIVE)
+  province    String?    @db.VarChar(50)
+  city        String?    @db.VarChar(50)
+  district    String?    @db.VarChar(50)
+  address     String?    @db.VarChar(300)
+  latitude    Decimal?   @db.Decimal(10, 7)
+  longitude   Decimal?   @db.Decimal(10, 7)
+  bio         String?    @db.Text
+  avgRating   Float      @default(0)
+  totalOrders Int        @default(0)
+  depositPaid Boolean    @default(false)
+  qualificationStatus String? @db.VarChar(20) // pending/approved/rejected
+  qualificationData   Json?                    // 资质资料
+  chatDisabled Boolean  @default(false)        // 关闭私信
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  pets              Pet[]
+  ownedOrders       ServiceOrder[]  @relation("OwnerOrders")
+  providerOrders    ServiceOrder[]  @relation("ProviderOrders")
+  reviewsGiven      Review[]        @relation("ReviewerReviews")
+  reviewsReceived   Review[]        @relation("RevieweeReviews")
+  chatRoomsAsUser1  ChatRoom[]      @relation("User1Rooms")
+  chatRoomsAsUser2  ChatRoom[]      @relation("User2Rooms")
+  chatMessages      ChatMessage[]
+  disputesInitiated Dispute[]       @relation("DisputeInitiator")
+  blacklistGiven    Blacklist[]     @relation("Blocker")
+  blacklistReceived Blacklist[]     @relation("Blocked")
+  favorites         Favorite[]
+  feedbacks         Feedback[]
+  notifications     PushLog[]
+  deposits          Deposit[]
+  smsCodes          SmsCode[]
+  serviceLocations  ServiceLocation[]
+
+  @@index([phone])
+  @@index([openid])
+  @@map("users")
+}
+
+model SmsCode {
+  id        Int      @id @default(autoincrement())
+  phone     String   @db.VarChar(20)
+  code      String   @db.VarChar(10)
+  type      String   @db.VarChar(30)
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  userId    Int?
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([phone, type])
+  @@map("sms_codes")
+}
+
+model Pet {
+  id          Int          @id @default(autoincrement())
+  ownerId     Int
+  name        String       @db.VarChar(50)
+  species     String       @db.VarChar(30)
+  breed       String?      @db.VarChar(50)
+  gender      PetGender    @default(UNKNOWN)
+  birthDate   DateTime?
+  weight      Float?
+  avatar      String?      @db.VarChar(500)
+  coverImage  String?      @db.VarChar(500)
+  dietHabits  String?      @db.Text
+  taboos      String?      @db.Text
+  description String?      @db.Text
+  privacy     PrivacyLevel @default(PUBLIC)
+  isArchived  Boolean      @default(false)
+  archivedAt  DateTime?
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  owner    User        @relation(fields: [ownerId], references: [id])
+  albums   PetAlbum[]
+  photos   PetPhoto[]
+  diaries  PetDiary[]
+  shares   PetShare[]
+  orders   ServiceOrder[]
+  favorites Favorite[]
+
+  @@index([ownerId])
+  @@map("pets")
+}
+
+model PetAlbum {
+  id          Int      @id @default(autoincrement())
+  petId       Int
+  name        String   @db.VarChar(100)
+  coverImage  String?  @db.VarChar(500)
+  description String?  @db.Text
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  pet    Pet        @relation(fields: [petId], references: [id], onDelete: Cascade)
+  photos PetPhoto[]
+
+  @@index([petId])
+  @@map("pet_albums")
+}
+
+model PetPhoto {
+  id           Int       @id @default(autoincrement())
+  petId        Int
+  albumId      Int?
+  url          String    @db.VarChar(500)
+  thumbnailUrl String?   @db.VarChar(500)
+  type         MediaType @default(IMAGE)
+  sourceType   String    @default("user") @db.VarChar(20) // "user" | "service"
+  description  String?   @db.Text
+  width        Int?
+  height       Int?
+  size         Int?
+  sortOrder    Int       @default(0)
+  createdAt    DateTime  @default(now())
+
+  pet   Pet       @relation(fields: [petId], references: [id], onDelete: Cascade)
+  album PetAlbum? @relation(fields: [albumId], references: [id], onDelete: SetNull)
+
+  @@index([petId])
+  @@index([albumId])
+  @@map("pet_photos")
+}
+
+model PetDiary {
+  id        Int      @id @default(autoincrement())
+  petId     Int
+  title     String   @db.VarChar(200)
+  content   String   @db.Text
+  images    Json?
+  isPinned  Boolean  @default(false)
+  pinnedAt  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@index([petId, createdAt(sort: Desc)])
+  @@map("pet_diaries")
+}
+
+model PetShare {
+  id              Int      @id @default(autoincrement())
+  petId           Int
+  userId          Int
+  title           String   @db.VarChar(200)
+  description     String?  @db.Text
+  images          Json?
+  showAlbum       Boolean  @default(false)
+  showDiary       Boolean  @default(false)
+  showServiceLogs Boolean  @default(false)
+  shareCode       String?  @unique @db.VarChar(20)
+  viewCount       Int      @default(0)
+  likeCount       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  pet  Pet  @relation(fields: [petId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([shareCode])
+  @@map("pet_shares")
+}
+
+model ServiceOrder {
+  id            Int         @id @default(autoincrement())
+  orderNo       String      @unique @db.VarChar(30)
+  ownerId       Int
+  providerId    Int?
+  petIds        Json                                             // 可多选宠物
+  serviceType   String      @db.VarChar(30)
+  status        OrderStatus @default(PENDING)
+  address       String      @db.VarChar(300)
+  latitude      Decimal?    @db.Decimal(10, 7)
+  longitude     Decimal?    @db.Decimal(10, 7)
+  scheduledDate DateTime    @db.Date
+  timeSlot      String      @db.VarChar(20)                     // "morning"|"afternoon"|"evening"
+  price         Decimal     @db.Decimal(10, 2)
+  depositAmount Decimal?    @db.Decimal(10, 2)
+  ownerNote     String?     @db.Text
+  providerNote  String?     @db.Text
+  cancelReason  String?     @db.VarChar(500)
+  cancelBy      Int?                                             // 取消人userId
+  serviceStartAt DateTime?
+  serviceEndAt   DateTime?
+  serviceDuration Int?                                           // 服务时长(秒)
+  completedAt   DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  owner      User             @relation("OwnerOrders", fields: [ownerId], references: [id])
+  provider   User?            @relation("ProviderOrders", fields: [providerId], references: [id])
+  statusLogs OrderStatusLog[]
+  reviews    Review[]
+  disputes   Dispute[]
+  chatRoom   ChatRoom?
+  deposit    Deposit?
+
+  @@index([ownerId])
+  @@index([providerId])
+  @@index([status])
+  @@index([orderNo])
+  @@map("service_orders")
+}
+
+model OrderStatusLog {
+  id         Int         @id @default(autoincrement())
+  orderId    Int
+  fromStatus OrderStatus?
+  toStatus   OrderStatus
+  operatorId Int?
+  remark     String?     @db.VarChar(500)
+  createdAt  DateTime    @default(now())
+
+  order ServiceOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_status_logs")
+}
+
+model Deposit {
+  id            Int           @id @default(autoincrement())
+  userId        Int
+  amount        Decimal       @db.Decimal(10, 2)
+  status        DepositStatus @default(UNPAID)
+  orderId       Int?
+  transactionId String?       @unique @db.VarChar(100)
+  paidAt        DateTime?
+  refundedAt    DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user  User          @relation(fields: [userId], references: [id])
+  order ServiceOrder? @relation(fields: [orderId], references: [id])
+  logs  DepositLog[]
+
+  @@index([userId])
+  @@map("deposits")
+}
+
+model DepositLog {
+  id         Int      @id @default(autoincrement())
+  depositId  Int
+  action     String   @db.VarChar(30) // "pay"|"freeze"|"unfreeze"|"forfeit"|"refund"
+  amount     Decimal  @db.Decimal(10, 2)
+  operatorId Int?
+  remark     String?  @db.VarChar(500)
+  createdAt  DateTime @default(now())
+
+  deposit Deposit @relation(fields: [depositId], references: [id], onDelete: Cascade)
+
+  @@index([depositId])
+  @@map("deposit_logs")
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  orderId    Int
+  reviewerId Int
+  revieweeId Int
+  rating     Int      @db.TinyInt
+  content    String?  @db.Text
+  tags       Json?
+  images     Json?
+  createdAt  DateTime @default(now())
+
+  order    ServiceOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  reviewer User         @relation("ReviewerReviews", fields: [reviewerId], references: [id])
+  reviewee User         @relation("RevieweeReviews", fields: [revieweeId], references: [id])
+
+  @@unique([orderId, reviewerId])
+  @@map("reviews")
+}
+
+model ChatRoom {
+  id        Int      @id @default(autoincrement())
+  orderId   Int      @unique
+  userId1   Int
+  userId2   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order    ServiceOrder  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user1    User          @relation("User1Rooms", fields: [userId1], references: [id])
+  user2    User          @relation("User2Rooms", fields: [userId2], references: [id])
+  messages ChatMessage[]
+
+  @@map("chat_rooms")
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  roomId    Int
+  senderId  Int
+  content   String   @db.Text
+  type      String   @default("text") @db.VarChar(20) // "text"|"image"
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  room   ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sender User     @relation(fields: [senderId], references: [id])
+
+  @@index([roomId, createdAt])
+  @@map("chat_messages")
+}
+
+model Dispute {
+  id          Int           @id @default(autoincrement())
+  orderId     Int
+  initiatorId Int
+  type        String        @db.VarChar(30) // "service_quality"|"damage"|"no_show"|"other"
+  reason      String        @db.VarChar(500)
+  description String?       @db.Text
+  images      Json?
+  status      DisputeStatus @default(PENDING)
+  resolution  String?       @db.Text
+  resolvedAt  DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  order     ServiceOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  initiator User         @relation("DisputeInitiator", fields: [initiatorId], references: [id])
+
+  @@index([orderId])
+  @@map("disputes")
+}
+
+model Blacklist {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  blockedUserId Int
+  reason        String?  @db.VarChar(500)
+  createdAt     DateTime @default(now())
+
+  user    User @relation("Blocker", fields: [userId], references: [id])
+  blocked User @relation("Blocked", fields: [blockedUserId], references: [id])
+
+  @@unique([userId, blockedUserId])
+  @@map("blacklist")
+}
+
+model Favorite {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  targetType String   @db.VarChar(30) // "pet"
+  targetId   Int
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, targetType, targetId])
+  @@index([userId])
+  @@map("favorites")
+}
+
+model Feedback {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  type      String   @db.VarChar(30) // "bug"|"suggestion"|"complaint"|"other"
+  content   String   @db.Text
+  images    Json?
+  contact   String?  @db.VarChar(100)
+  status    String   @default("pending") @db.VarChar(20) // pending|processing|resolved
+  remark    String?  @db.Text
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("feedbacks")
+}
+
+model PushLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  type      PushType
+  title     String   @db.VarChar(200)
+  content   String   @db.Text
+  relatedId Int?
+  isRead    Boolean  @default(false)
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead, createdAt(sort: Desc)])
+  @@map("push_logs")
+}
+
+model ServiceLocation {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  address   String   @db.VarChar(300)
+  latitude  Decimal  @db.Decimal(10, 7)
+  longitude Decimal  @db.Decimal(10, 7)
+  city      String?  @db.VarChar(50)
+  district  String?  @db.VarChar(50)
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("service_locations")
+}
+
+// ─── ADMIN (独立后台账号) ───────────────────────────────────
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique @db.VarChar(50)
+  password  String   @db.VarChar(128)
+  nickname  String   @db.VarChar(50)
+  avatar    String?  @db.VarChar(500)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  loginLogs AdminLoginLog[]
+
+  @@map("admins")
+}
+
+model AdminLoginLog {
+  id        Int      @id @default(autoincrement())
+  adminId   Int
+  ip        String?  @db.VarChar(50)
+  userAgent String?  @db.VarChar(500)
+  createdAt DateTime @default(now())
+
+  admin Admin @relation(fields: [adminId], references: [id])
+
+  @@map("admin_login_logs")
+}
+
+// ─── SYSTEM CONFIG ──────────────────────────────────────────
+
+model SystemConfig {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique @db.VarChar(50)
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("system_configs")
+}
+
+// ─── LIVE RESERVED ──────────────────────────────────────────
+
+model LiveRoom {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  streamUrl String?  @db.VarChar(500)
+  status    String   @default("idle") @db.VarChar(20) // idle|living|ended
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("live_rooms")
+}

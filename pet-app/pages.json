@@ -1,0 +1,159 @@
+{
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^c-(.*)": "@/components/common/$1.vue"
+    }
+  },
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "thePet"
+      }
+    },
+    {
+      "path": "pages/order/list",
+      "style": {
+        "navigationBarTitleText": "订单"
+      }
+    },
+    {
+      "path": "pages/message/index",
+      "style": {
+        "navigationBarTitleText": "消息"
+      }
+    },
+    {
+      "path": "pages/user/index",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    }
+  ],
+  "subPackages": [
+    {
+      "root": "subPages/login",
+      "pages": [
+        {
+          "path": "index",
+          "style": { "navigationBarTitleText": "登录/注册" }
+        }
+      ]
+    },
+    {
+      "root": "subPages/pet",
+      "pages": [
+        { "path": "list", "style": { "navigationBarTitleText": "我的宠物" } },
+        { "path": "detail", "style": { "navigationBarTitleText": "宠物档案" } },
+        { "path": "create", "style": { "navigationBarTitleText": "添加宠物" } },
+        { "path": "edit", "style": { "navigationBarTitleText": "编辑宠物" } }
+      ]
+    },
+    {
+      "root": "subPages/album",
+      "pages": [
+        { "path": "list", "style": { "navigationBarTitleText": "宠物相册" } },
+        { "path": "preview", "style": { "navigationBarTitleText": "照片预览" } }
+      ]
+    },
+    {
+      "root": "subPages/diary",
+      "pages": [
+        { "path": "list", "style": { "navigationBarTitleText": "成长日记" } },
+        { "path": "detail", "style": { "navigationBarTitleText": "日记详情" } },
+        { "path": "create", "style": { "navigationBarTitleText": "写日记" } }
+      ]
+    },
+    {
+      "root": "subPages/share",
+      "pages": [
+        { "path": "create", "style": { "navigationBarTitleText": "创建分享" } },
+        { "path": "detail", "style": { "navigationBarTitleText": "分享详情" } },
+        { "path": "public", "style": { "navigationBarTitleText": "宠物主页" } }
+      ]
+    },
+    {
+      "root": "subPages/order",
+      "pages": [
+        { "path": "create", "style": { "navigationBarTitleText": "下单" } },
+        { "path": "detail", "style": { "navigationBarTitleText": "订单详情" } },
+        { "path": "dispute-create", "style": { "navigationBarTitleText": "发起申诉" } },
+        { "path": "review-create", "style": { "navigationBarTitleText": "评价" } }
+      ]
+    },
+    {
+      "root": "subPages/chat",
+      "pages": [
+        { "path": "room", "style": { "navigationBarTitleText": "私聊" } }
+      ]
+    },
+    {
+      "root": "subPages/map",
+      "pages": [
+        { "path": "location-picker", "style": { "navigationBarTitleText": "选择位置" } },
+        { "path": "route", "style": { "navigationBarTitleText": "路线规划" } }
+      ]
+    },
+    {
+      "root": "subPages/user",
+      "pages": [
+        { "path": "profile-edit", "style": { "navigationBarTitleText": "编辑资料" } },
+        { "path": "identity-switch", "style": { "navigationBarTitleText": "身份切换" } },
+        { "path": "qualification", "style": { "navigationBarTitleText": "资质申请" } },
+        { "path": "deposit", "style": { "navigationBarTitleText": "押金中心" } },
+        { "path": "locations", "style": { "navigationBarTitleText": "服务地址" } },
+        { "path": "blacklist", "style": { "navigationBarTitleText": "黑名单" } },
+        { "path": "favorites", "style": { "navigationBarTitleText": "我的收藏" } },
+        { "path": "reviews", "style": { "navigationBarTitleText": "我的评价" } }
+      ]
+    },
+    {
+      "root": "subPages/setting",
+      "pages": [
+        { "path": "index", "style": { "navigationBarTitleText": "设置" } },
+        { "path": "privacy", "style": { "navigationBarTitleText": "隐私设置" } },
+        { "path": "feedback", "style": { "navigationBarTitleText": "意见反馈" } }
+      ]
+    }
+  ],
+  "preloadRule": {},
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "thePet",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "backgroundColor": "#F5F7FA"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#409EFF",
+    "borderStyle": "black",
+    "backgroundColor": "#FFFFFF",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "static/tab/home.png",
+        "selectedIconPath": "static/tab/home-active.png"
+      },
+      {
+        "pagePath": "pages/order/list",
+        "text": "订单",
+        "iconPath": "static/tab/order.png",
+        "selectedIconPath": "static/tab/order-active.png"
+      },
+      {
+        "pagePath": "pages/message/index",
+        "text": "消息",
+        "iconPath": "static/tab/message.png",
+        "selectedIconPath": "static/tab/message-active.png"
+      },
+      {
+        "pagePath": "pages/user/index",
+        "text": "我的",
+        "iconPath": "static/tab/user.png",
+        "selectedIconPath": "static/tab/user-active.png"
+      }
+    ]
+  }
+}
