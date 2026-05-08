@@ -38,28 +38,27 @@
         </view>
       </view>
 
-      <!-- 登录按钮 -->
+      <!-- 手机验证码登录 -->
       <view class="login-btn" @tap="handleLogin">
-        <text>登录 / 注册</text>
+        <text>登录</text>
       </view>
 
-      <!-- 微信一键登录（code换openid） -->
-      <view class="wechat-login">
-        <view class="wechat-btn" @tap="handleWechatLogin">
-          <text>微信一键登录</text>
-        </view>
+      <!-- 分隔线 -->
+      <view class="divider">
+        <view class="divider-line" />
+        <text class="divider-text">其他登录方式</text>
+        <view class="divider-line" />
       </view>
 
-      <!-- 微信手机号授权登录（获取真实手机号） -->
-      <view class="wechat-login" style="margin-top:16rpx;">
-        <button
-          class="wechat-phone-btn"
-          open-type="getPhoneNumber"
-          @getphonenumber="handleGetPhoneNumber"
-        >
-          微信手机号授权登录
-        </button>
-      </view>
+      <!-- 微信手机号授权登录 -->
+      <button
+        class="wechat-btn"
+        open-type="getPhoneNumber"
+        @getphonenumber="handleGetPhoneNumber"
+      >
+        <text class="wechat-icon">💬</text>
+        <text>微信手机号快捷登录</text>
+      </button>
 
       <!-- 协议 -->
       <view class="agreement">
@@ -115,52 +114,20 @@ async function handleLogin() {
     await userStore.login(phone.value, code.value);
     uni.hideLoading();
     uni.showToast({ title: '登录成功', icon: 'success' });
-    setTimeout(() => {
-      uni.switchTab({ url: '/pages/index/index' });
-    }, 500);
+    setTimeout(() => uni.switchTab({ url: '/pages/index/index' }), 500);
   } catch (e) {
     uni.hideLoading();
     uni.showToast({ title: e.message || '登录失败', icon: 'none' });
   }
 }
 
-// 微信code登录
-function handleWechatLogin() {
-  // #ifdef MP-WEIXIN
-  uni.showLoading({ title: '登录中...' });
-  uni.login({
-    provider: 'weixin',
-    success: async (loginRes) => {
-      try {
-        await userStore.loginByWechat(loginRes.code);
-        uni.hideLoading();
-        uni.showToast({ title: '登录成功', icon: 'success' });
-        setTimeout(() => uni.switchTab({ url: '/pages/index/index' }), 500);
-      } catch (e) {
-        uni.hideLoading();
-        uni.showToast({ title: e.message || '微信登录失败', icon: 'none' });
-      }
-    },
-    fail: () => {
-      uni.hideLoading();
-      uni.showToast({ title: '微信授权取消', icon: 'none' });
-    },
-  });
-  // #endif
-  // #ifndef MP-WEIXIN
-  uni.showToast({ title: '请在小程序中使用微信登录', icon: 'none' });
-  // #endif
-}
-
 // 微信手机号授权登录
 function handleGetPhoneNumber(e) {
   // #ifdef MP-WEIXIN
   if (e.detail.errMsg !== 'getPhoneNumber:ok') {
-    uni.showToast({ title: '手机号授权取消', icon: 'none' });
     return;
   }
   uni.showLoading({ title: '登录中...' });
-  // 先wx.login获取code，再结合手机号加密数据
   uni.login({
     provider: 'weixin',
     success: async (loginRes) => {
@@ -190,37 +157,39 @@ function handleGetPhoneNumber(e) {
 <style scoped lang="scss">
 .page-login {
   min-height: 100vh;
-  background: #fff;
-  padding: 120rpx 64rpx;
+  background: #FBF8F4;
+  padding: 80rpx 48rpx;
 }
-.login-logo { text-align: center; margin-bottom: 80rpx; }
+.login-logo { text-align: center; margin-bottom: 60rpx; }
 .logo-icon { font-size: 80rpx; display: block; }
-.logo-title { font-size: 48rpx; font-weight: bold; color: #303133; display: block; margin: 16rpx 0 8rpx; }
-.logo-desc { font-size: 26rpx; color: #909399; }
-.form-item { margin-bottom: 32rpx; }
-.form-label { font-size: 28rpx; color: #303133; display: block; margin-bottom: 12rpx; }
-.form-input { width: 100%; height: 88rpx; border: 2rpx solid #DCDFE6; border-radius: 12rpx; padding: 0 24rpx; font-size: 28rpx; box-sizing: border-box; }
+.logo-title { font-size: 48rpx; font-weight: bold; color: #2D2016; display: block; margin: 12rpx 0 8rpx; }
+.logo-desc { font-size: 26rpx; color: #9E8E7E; }
+.form-item { margin-bottom: 28rpx; }
+.form-label { font-size: 28rpx; color: #2D2016; display: block; margin-bottom: 10rpx; font-weight: 500; }
+.form-input { width: 100%; height: 88rpx; border: 2rpx solid #F5F0EA; border-radius: 16rpx; padding: 0 24rpx; font-size: 28rpx; background: #fff; box-sizing: border-box; }
 .code-row { display: flex; gap: 16rpx; }
 .code-input { flex: 1; }
 .code-btn {
-  width: 220rpx; height: 88rpx; background: #FFF3E8; border-radius: 12rpx;
+  width: 220rpx; height: 88rpx; background: #FFF3E8; border-radius: 16rpx;
   display: flex; align-items: center; justify-content: center;
-  font-size: 26rpx; color: #F5895A;
+  font-size: 26rpx; color: #F5895A; font-weight: 500;
 }
-.code-btn.disabled { color: #C0C4CC; background: #f5f7fa; }
+.code-btn.disabled { color: #C4B8AD; background: #F5F0EA; }
 .login-btn {
   width: 100%; height: 96rpx; background: #F5895A; border-radius: 48rpx;
   display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 32rpx; font-weight: 600; margin-top: 40rpx; margin-bottom: 40rpx;
+  color: #fff; font-size: 32rpx; font-weight: 600; margin-top: 32rpx; margin-bottom: 32rpx;
 }
-.wechat-login { text-align: center; margin-bottom: 40rpx; }
-.wechat-btn { color: #67C23A; font-size: 28rpx; }
-.wechat-phone-btn {
-  width: 100%; height: 96rpx;
-  background: #67C23A; color: #fff; font-size: 32rpx; font-weight: 600;
-  border-radius: 48rpx; border: none; line-height: 96rpx;
+.divider { display: flex; align-items: center; gap: 20rpx; margin-bottom: 32rpx; }
+.divider-line { flex: 1; height: 1rpx; background: #F5F0EA; }
+.divider-text { font-size: 24rpx; color: #C4B8AD; }
+.wechat-btn {
+  width: 100%; height: 96rpx; background: #fff; border: 2rpx solid #67C23A; border-radius: 48rpx;
+  display: flex; align-items: center; justify-content: center; gap: 8rpx;
+  color: #67C23A; font-size: 30rpx; font-weight: 600;
 }
-.wechat-phone-btn::after { border: none; }
-.agreement { text-align: center; font-size: 22rpx; color: #909399; }
-.agreement .link { color: var(--theme-primary); }
+.wechat-btn::after { border: none; }
+.wechat-icon { font-size: 36rpx; }
+.agreement { text-align: center; font-size: 22rpx; color: #9E8E7E; margin-top: 40rpx; }
+.agreement .link { color: #F5895A; }
 </style>

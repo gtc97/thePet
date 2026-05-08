@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { loginByCode, wechatLogin, wechatPhoneLogin } from '@/api/auth';
+import { loginByCode, wechatPhoneLogin } from '@/api/auth';
 import { request } from '@/api/request';
 
 export const useUserStore = defineStore('user', () => {
