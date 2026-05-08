@@ -69,7 +69,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onLoad } from '@dcloudio/uni-app';
+import { ref, reactive } from 'vue';
+import { onLoad } from '@dcloudio/uni-app';
 import { getPets } from '@/api/pet';
 import { createOrder } from '@/api/order';
 

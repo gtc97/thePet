@@ -23,7 +23,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onLoad } from '@dcloudio/uni-app';
+import { ref, reactive } from 'vue';
+import { onLoad } from '@dcloudio/uni-app';
 import { createDispute } from '@/api/review';
 
 const orderId = ref('');

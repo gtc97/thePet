@@ -50,7 +50,8 @@
 </template>
 
 <script setup>
-import { ref, onShow } from '@dcloudio/uni-app';
+import { ref } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
 import { getOrders, getNearbyOrders } from '@/api/order';
 import { useUserStore } from '@/store/user';
 

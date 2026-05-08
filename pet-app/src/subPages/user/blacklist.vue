@@ -14,7 +14,8 @@
 </template>
 
 <script setup>
-import { ref, onShow } from '@dcloudio/uni-app';
+import { ref } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
 import { getBlacklist, unblockUser } from '@/api/review';
 
 const list = ref([]);

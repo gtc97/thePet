@@ -29,7 +29,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onShow } from '@dcloudio/uni-app';
+import { ref, reactive } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
 import { getDepositStatus, payDeposit, getDepositLogs } from '@/api/deposit';
 
 const deposit = reactive({ status: 'UNPAID', amount: 0 });
