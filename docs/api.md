@@ -207,7 +207,7 @@ Content-Type: multipart/form-data
 
 ---
 
-## 四、宠物模块 `/pets`（阶段2实现）
+## 四、宠物模块 `/pets`（✅ 已实现）
 
 ```
 GET    /pets                    # 我的宠物列表
@@ -222,7 +222,7 @@ GET    /pets/:id/stats          # 数据统计
 
 ---
 
-## 五、相册模块 `/pets/:petId`（阶段2实现）
+## 五、相册模块 `/pets/:petId`（✅ 已实现）
 
 ```
 GET    /pets/:petId/albums       # 相册列表
@@ -237,7 +237,7 @@ DELETE /pets/:petId/photos/:id   # 删除照片
 
 ---
 
-## 六、日记模块（阶段2实现）
+## 六、日记模块（✅ 已实现）
 
 ```
 GET    /pets/:petId/diaries          # 日记列表（分页）
@@ -250,7 +250,7 @@ POST   /pets/:petId/diaries/:id/pin  # 切换置顶
 
 ---
 
-## 七、分享模块（阶段2实现）
+## 七、分享模块（✅ 已实现）
 
 ```
 GET    /shares                  # 公开分享广场
@@ -263,62 +263,62 @@ POST   /shares/:id/like         # 点赞
 
 ---
 
-## 八、订单模块 `/orders`（阶段3实现）
+## 八、订单模块 `/orders`（✅ 已实现）
 
 ```
 GET    /orders                  # 我的订单列表（按身份区分）
 POST   /orders                  # 创建订单（宠主）
-GET    /orders/:id              # 订单详情
-POST   /orders/:id/accept       # 师傅接单
+GET    /orders/:id              # 订单详情（含人员信息、评价、状态日志）
+POST   /orders/:id/accept       # 师傅接单（押金检查、黑名单拦截、创建聊天室）
+POST   /orders/:id/reject       # 师傅拒单（必填原因）
 POST   /orders/:id/start        # 开始服务（记录开始时间）
-POST   /orders/:id/complete     # 完成服务（上传成果）
-POST   /orders/:id/cancel       # 取消订单（需填写原因）
+POST   /orders/:id/complete     # 完成服务（记录时长、成果图自动存入相册）
+POST   /orders/:id/cancel       # 取消订单（需填写原因、自动解冻押金）
 GET    /orders/:id/timeline     # 订单状态时间线
-GET    /orders/nearby           # 附近可接订单（师傅视角）
+GET    /orders/nearby           # 附近可接订单（师傅视角、自动排除黑名单）
 ```
 
 ---
 
-## 九、押金模块 `/deposits`（阶段3实现）
+## 九、押金模块 `/deposits`（✅ 已实现）
 
 ```
 GET    /deposits/me             # 我的押金状态
-POST   /deposits/pay            # 缴纳押金（发起微信支付）
-POST   /deposits/callback       # 微信支付回调（无需认证）
-GET    /deposits/me/logs        # 押金流水明细
+POST   /deposits/pay            # 缴纳押金（模拟微信支付，生产需对接微信支付SDK）
+GET    /deposits/me/logs        # 押金流水明细（缴纳/冻结/解冻/退款/罚没）
 ```
 
 ---
 
-## 十、评价模块（阶段3实现）
+## 十、评价模块（✅ 已实现）
 
 ```
-POST   /orders/:orderId/reviews # 提交评价
+POST   /orders/:orderId/reviews # 提交评价（1-5星 + 标签 + 文字，自动计算平均分）
 GET    /orders/:orderId/reviews # 查看订单评价
-GET    /users/:id/reviews       # 用户收到的评价列表
+GET    /users/:id/reviews       # 用户收到的评价列表（含评价人信息）
 ```
 
 ---
 
-## 十一、聊天模块（阶段3实现）
+## 十一、聊天模块（✅ 已实现）
 
 ```
-GET    /orders/:orderId/chat/room       # 获取/创建聊天室
-GET    /chat/rooms                      # 我的聊天室列表
-GET    /chat/rooms/:roomId/messages     # 消息记录（分页）
-POST   /chat/rooms/:roomId/messages     # 发送消息（REST降级）
-WS     /ws/chat                         # WebSocket实时通信
+GET    /chat/rooms/:orderId      # 获取/创建聊天室
+GET    /chat/rooms               # 我的聊天室列表（含最后消息预览）
+GET    /chat/rooms/:roomId/messages  # 消息记录（分页、自动标记已读）
+POST   /chat/rooms/:roomId/messages  # 发送消息（敏感词过滤、私信开关检查）
 ```
+> 聊天限制：仅订单 ACCEPTED/IN_PROGRESS 状态 + 完成后7天内可聊天
 
 ---
 
-## 十二、申诉模块（阶段3实现）
+## 十二、申诉模块（✅ 已实现）
 
 ```
-POST   /orders/:orderId/disputes  # 发起申诉
+POST   /orders/:orderId/disputes  # 发起申诉（类型/原因/详情，订单自动标记DISPUTE）
+GET    /disputes/me               # 我的申诉列表（含关联订单号）
 GET    /disputes/:id              # 申诉详情
-GET    /disputes/me               # 我的申诉列表
-PUT    /disputes/:id/cancel       # 撤销申诉
+PUT    /disputes/:id/cancel       # 撤销申诉（订单状态恢复COMPLETED）
 ```
 
 ---

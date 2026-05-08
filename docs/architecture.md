@@ -35,9 +35,18 @@ src/
 │   ├── auth/        #  认证模块
 │   ├── user/        #  用户模块
 │   ├── upload/      #  上传模块
-│   ├── pet/         #  宠物模块（待实现）
-│   ├── album/       #  相册模块（待实现）
-│   └── ...          #  其他模块
+│   ├── pet/         #  宠物模块
+│   ├── album/       #  相册/照片模块
+│   ├── diary/       #  日记模块
+│   ├── share/       #  分享模块
+│   ├── favorite/    #  收藏模块
+│   ├── order/       #  订单模块
+│   ├── deposit/     #  押金模块
+│   ├── review/      #  评价模块
+│   ├── dispute/     #  申诉模块
+│   ├── chat/        #  聊天模块
+│   ├── blacklist/   #  黑名单模块
+│   └── notification/#  通知模块
 ├── utils/           # 工具函数层（JWT、SMS、文件存储）
 └── types/           # 类型定义层
 ```
