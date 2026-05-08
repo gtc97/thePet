@@ -23,9 +23,10 @@
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import api from '@/api';
+import { useAdminStore } from '@/stores/admin';
 
 const router = useRouter();
+const store = useAdminStore();
 const loading = ref(false);
 const form = reactive({ username: 'admin', password: '' });
 
@@ -35,14 +36,17 @@ const rules = {
 };
 
 async function handleLogin() {
+  if (!form.password) {
+    ElMessage.warning('请输入密码（默认: admin123）');
+    return;
+  }
   loading.value = true;
   try {
-    const res = await api.post('/admin/auth/login', form);
-    localStorage.setItem('admin_token', res.data.token);
+    await store.login(form.username, form.password);
     ElMessage.success('登录成功');
     router.push('/dashboard');
-  } catch {
-    // handled by interceptor
+  } catch (err: any) {
+    ElMessage.error(err?.response?.data?.message || '登录失败');
   } finally {
     loading.value = false;
   }

@@ -2,6 +2,7 @@ import app from './app';
 import { config } from './config';
 import { connectRedis } from './config/redis';
 import prisma from './config/database';
+import { adminService } from './modules/admin/admin.service';
 
 async function bootstrap() {
   // Verify database connection
@@ -12,6 +13,9 @@ async function bootstrap() {
     console.error('[Database] Connection failed:', (err as Error).message);
     process.exit(1);
   }
+
+  // 初始化默认管理员（首次运行自动创建）
+  await adminService.seedAdmin();
 
   // Connect Redis (non-blocking)
   await connectRedis();

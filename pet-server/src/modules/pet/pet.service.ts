@@ -125,7 +125,9 @@ export class PetService {
     );
 
     // 查询关联订单数
-    const orderCount = await prisma.serviceOrder.count({ where: { petIds: { path: '$.petIds', string_contains: String(petId) } } });
+    const orderCount = await prisma.$queryRaw<[{ cnt: bigint }]>`
+      SELECT COUNT(*) as cnt FROM service_orders WHERE JSON_CONTAINS(petIds, ${String(petId)})
+    `.then(r => Number(r[0]?.cnt || 0)).catch(() => 0);
 
     return {
       days,
