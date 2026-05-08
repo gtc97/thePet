@@ -11,7 +11,7 @@ export class PetService {
         id: true, name: true, species: true, breed: true,
         gender: true, avatar: true, privacy: true, isArchived: true,
         birthDate: true, createdAt: true,
-        _count: { select: { photos: true, diaries: true, orders: true } },
+        _count: { select: { photos: true, diaries: true } },
       },
     });
   }
@@ -111,7 +111,7 @@ export class PetService {
       where: { id: petId },
       select: {
         id: true, ownerId: true, privacy: true, createdAt: true,
-        _count: { select: { photos: true, diaries: true, orders: true } },
+        _count: { select: { photos: true, diaries: true } },
       },
     });
     if (!pet) throw new AppError(404, '宠物不存在');
@@ -124,11 +124,14 @@ export class PetService {
       (Date.now() - pet.createdAt.getTime()) / (1000 * 60 * 60 * 24)
     );
 
+    // 查询关联订单数
+    const orderCount = await prisma.serviceOrder.count({ where: { petIds: { path: '$.petIds', string_contains: String(petId) } } });
+
     return {
       days,
       diaryCount: pet._count.diaries,
       photoCount: pet._count.photos,
-      orderCount: pet._count.orders,
+      orderCount,
     };
   }
 

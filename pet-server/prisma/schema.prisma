@@ -104,6 +104,7 @@ model User {
   blacklistGiven    Blacklist[]     @relation("Blocker")
   blacklistReceived Blacklist[]     @relation("Blocked")
   favorites         Favorite[]
+  shares            PetShare[]      @relation("PetShareOwner")
   feedbacks         Feedback[]
   notifications     PushLog[]
   deposits          Deposit[]
@@ -157,8 +158,6 @@ model Pet {
   photos   PetPhoto[]
   diaries  PetDiary[]
   shares   PetShare[]
-  orders   ServiceOrder[]
-  favorites Favorite[]
 
   @@index([ownerId])
   @@map("pets")
@@ -238,7 +237,7 @@ model PetShare {
   updatedAt       DateTime @updatedAt
 
   pet  Pet  @relation(fields: [petId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id])
+  user User @relation("PetShareOwner", fields: [userId], references: [id])
 
   @@index([userId])
   @@index([shareCode])
@@ -306,7 +305,7 @@ model Deposit {
   userId        Int
   amount        Decimal       @db.Decimal(10, 2)
   status        DepositStatus @default(UNPAID)
-  orderId       Int?
+  orderId       Int?        @unique
   transactionId String?       @unique @db.VarChar(100)
   paidAt        DateTime?
   refundedAt    DateTime?
