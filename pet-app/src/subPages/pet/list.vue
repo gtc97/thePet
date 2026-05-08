@@ -68,10 +68,10 @@ function navigateTo(url) {
 .page-pet-list { padding-bottom: 40rpx; }
 .header { display: flex; justify-content: space-between; align-items: center; padding: 24rpx 32rpx; }
 .title { font-size: 36rpx; font-weight: bold; color: #303133; }
-.add-btn { background: var(--theme-primary); color: #fff; padding: 12rpx 28rpx; border-radius: 32rpx; font-size: 26rpx; }
+.add-btn { background: #F5895A; color: #fff; padding: 12rpx 28rpx; border-radius: 32rpx; font-size: 26rpx; }
 .filter-tabs { display: flex; padding: 0 32rpx 20rpx; gap: 24rpx; }
 .tab { font-size: 28rpx; color: #909399; padding: 8rpx 0; }
-.tab.active { color: var(--theme-primary); font-weight: 600; border-bottom: 4rpx solid var(--theme-primary); }
+.tab.active { color: #F5895A; font-weight: 600; border-bottom: 4rpx solid #F5895A; }
 .pet-list { padding: 0 32rpx; }
 .pet-card { display: flex; align-items: center; background: #fff; padding: 24rpx; border-radius: 12rpx; margin-bottom: 16rpx; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
 .pet-avatar { width: 100rpx; height: 100rpx; border-radius: 50%; margin-right: 20rpx; background: #f0f0f0; }

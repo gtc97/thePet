@@ -159,11 +159,11 @@ async function handleSubmit() {
 .avatar-placeholder { font-size: 60rpx; color: #C0C4CC; }
 .gender-switch { display: flex; gap: 16rpx; }
 .gender-option { flex: 1; text-align: center; padding: 16rpx 0; border: 2rpx solid #DCDFE6; border-radius: 8rpx; font-size: 26rpx; color: #606266; }
-.gender-option.active { border-color: var(--theme-primary); color: var(--theme-primary); background: var(--theme-primary-light); }
+.gender-option.active { border-color: #F5895A; color: #F5895A; background: #FFF3E8; }
 .privacy-row { display: flex; gap: 16rpx; }
 .privacy-option { flex: 1; text-align: center; padding: 20rpx 0; border: 2rpx solid #DCDFE6; border-radius: 8rpx; }
 .privacy-option text { display: block; font-size: 28rpx; color: #303133; }
 .privacy-desc { font-size: 22rpx !important; color: #909399 !important; }
 .privacy-option.active { border-color: var(--theme-primary); background: var(--theme-primary-light); }
-.submit-btn { margin: 40rpx 32rpx; background: var(--theme-primary); color: #fff; text-align: center; padding: 24rpx; border-radius: 48rpx; font-size: 30rpx; font-weight: 600; }
+.submit-btn { margin: 40rpx 32rpx; background: #F5895A; color: #fff; text-align: center; padding: 24rpx; border-radius: 48rpx; font-size: 30rpx; font-weight: 600; }
 </style>

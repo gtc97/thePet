@@ -149,13 +149,13 @@ function handleWechatLogin() {
 .code-row { display: flex; gap: 16rpx; }
 .code-input { flex: 1; }
 .code-btn {
-  width: 220rpx; height: 88rpx; background: var(--theme-primary-light); border-radius: 12rpx;
+  width: 220rpx; height: 88rpx; background: #FFF3E8; border-radius: 12rpx;
   display: flex; align-items: center; justify-content: center;
-  font-size: 26rpx; color: var(--theme-primary);
+  font-size: 26rpx; color: #F5895A;
 }
 .code-btn.disabled { color: #C0C4CC; background: #f5f7fa; }
 .login-btn {
-  width: 100%; height: 96rpx; background: var(--theme-primary); border-radius: 48rpx;
+  width: 100%; height: 96rpx; background: #F5895A; border-radius: 48rpx;
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-size: 32rpx; font-weight: 600; margin-top: 40rpx; margin-bottom: 40rpx;
 }

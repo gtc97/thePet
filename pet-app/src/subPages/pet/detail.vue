@@ -177,6 +177,6 @@ async function handleToggleArchive() {
 .quick-icon { font-size: 40rpx; display: block; margin-bottom: 8rpx; }
 .quick-text { font-size: 22rpx; color: #606266; }
 .action-btns { display: flex; gap: 20rpx; }
-.action-btn { flex: 1; text-align: center; padding: 20rpx; background: var(--theme-primary-light); border-radius: 12rpx; font-size: 26rpx; color: var(--theme-primary); }
+.action-btn { flex: 1; text-align: center; padding: 20rpx; background: #FFF3E8; border-radius: 12rpx; font-size: 26rpx; color: #F5895A; }
 .action-btn.warn { background: #fef0f0; color: #F56C6C; }
 </style>
