@@ -3,6 +3,14 @@ import { userService } from './user.service';
 import { AuthRequest, success } from '../../types';
 
 export class UserController {
+  // 用户统计数据
+  async getStats(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const data = await userService.getStats(req.user!.userId);
+      res.json(success(data));
+    } catch (err) { next(err); }
+  }
+
   async getProfile(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const data = await userService.getProfile(req.user!.userId);

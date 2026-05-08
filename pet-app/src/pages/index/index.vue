@@ -17,23 +17,30 @@
         <!-- 统计数据 -->
         <view class="stats-row">
           <view class="stat-card">
-            <text class="stat-num">3</text>
+            <text class="stat-num">{{ stats.petCount }}</text>
             <text class="stat-label">我的宠物</text>
           </view>
           <view class="stat-card">
-            <text class="stat-num">12</text>
+            <text class="stat-num">{{ stats.orderCount }}</text>
             <text class="stat-label">服务订单</text>
           </view>
           <view class="stat-card">
-            <text class="stat-num">86</text>
+            <text class="stat-num">{{ stats.diaryCount }}</text>
             <text class="stat-label">萌宠日记</text>
           </view>
           <view class="stat-card">
-            <text class="stat-num">23</text>
+            <text class="stat-num">{{ stats.favCount }}</text>
             <text class="stat-label">收藏萌宠</text>
           </view>
         </view>
       </view>
+    </view>
+
+    <!-- 公告栏 -->
+    <view class="notice-bar" v-if="announcements.length > 0" @tap="showAnnouncement = true">
+      <text class="notice-icon">📢</text>
+      <text class="notice-text">{{ announcements[0].title }}</text>
+      <text class="notice-more" v-if="announcements.length > 1">等{{ announcements.length }}条</text>
     </view>
 
     <!-- 快捷入口卡片 -->
@@ -47,50 +54,29 @@
       </view>
       
       <view class="cards-row">
-        <view class="quick-card warm" @tap="navigateTo('/subPages/order/create')">
+        <view class="quick-card" :class="index % 2 === 0 ? 'warm' : 'fresh'"
+          v-for="(svc, index) in topServices" :key="svc.name"
+          @tap="navigateTo('/subPages/order/create')"
+        >
           <view class="card-header">
-            <view class="icon-wrap orange">🐕</view>
+            <view class="icon-wrap" :class="index % 2 === 0 ? 'orange' : 'green'">{{ svc.icon }}</view>
             <view class="card-info">
-              <text class="card-title">遛狗服务</text>
-              <text class="card-desc">专业遛狗师，安全可靠</text>
+              <text class="card-title">{{ svc.name }}服务</text>
+              <text class="card-desc">¥{{ svc.price }}/次，专业可靠</text>
             </view>
           </view>
           <view class="card-stats">
             <view class="stat-item">
-              <text class="stat-value">128</text>
-              <text class="stat-name">订单</text>
+              <text class="stat-value">¥{{ svc.price }}</text>
+              <text class="stat-name">起</text>
             </view>
             <view class="stat-item">
               <text class="stat-value">4.9</text>
               <text class="stat-name">评分</text>
             </view>
             <view class="stat-item">
-              <text class="stat-value">3km</text>
-              <text class="stat-name">距离</text>
-            </view>
-          </view>
-        </view>
-        
-        <view class="quick-card fresh" @tap="navigateTo('/subPages/order/create')">
-          <view class="card-header">
-            <view class="icon-wrap green">🛁</view>
-            <view class="card-info">
-              <text class="card-title">宠物洗澡</text>
-              <text class="card-desc">专业洗护，毛发柔顺</text>
-            </view>
-          </view>
-          <view class="card-stats">
-            <view class="stat-item">
-              <text class="stat-value">89</text>
-              <text class="stat-name">订单</text>
-            </view>
-            <view class="stat-item">
-              <text class="stat-value">4.8</text>
-              <text class="stat-name">评分</text>
-            </view>
-            <view class="stat-item">
-              <text class="stat-value">5km</text>
-              <text class="stat-name">距离</text>
+              <text class="stat-value">附近</text>
+              <text class="stat-name">可约</text>
             </view>
           </view>
         </view>
@@ -104,21 +90,13 @@
       </view>
       
       <view class="function-grid">
-        <view class="function-item" @tap="navigateTo('/subPages/order/create')">
-          <view class="func-icon warm-bg">🐕</view>
-          <text class="func-text">遛狗</text>
+        <view class="function-item" v-for="(svc, i) in services" :key="svc.name" @tap="navigateTo('/subPages/order/create')">
+          <view class="func-icon" :class="['warm-bg','fresh-bg','purple-bg','yellow-bg'][i % 4]">{{ svc.icon }}</view>
+          <text class="func-text">{{ svc.name }}</text>
         </view>
-        <view class="function-item" @tap="navigateTo('/subPages/order/create')">
-          <view class="func-icon fresh-bg">🛁</view>
-          <text class="func-text">洗澡</text>
-        </view>
-        <view class="function-item" @tap="navigateTo('/subPages/order/create')">
-          <view class="func-icon purple-bg">🏠</view>
-          <text class="func-text">寄养</text>
-        </view>
-        <view class="function-item" @tap="navigateTo('/subPages/order/create')">
-          <view class="func-icon yellow-bg">💉</view>
-          <text class="func-text">疫苗</text>
+        <view class="function-item" @tap="navigateTo('/subPages/pet/create')">
+          <view class="func-icon warm-bg">➕</view>
+          <text class="func-text">添加宠物</text>
         </view>
       </view>
     </view>
@@ -134,18 +112,21 @@
       </view>
       
       <view class="diary-list">
-        <view class="diary-card" v-for="(item, index) in diaryList" :key="index">
+        <view class="diary-card" v-for="item in diaryList" :key="item.id" @tap="navigateTo('/subPages/diary/detail?id=' + item.id)">
           <view class="diary-header">
             <view class="user-info">
-              <view class="avatar">{{ item.avatar }}</view>
+              <image class="avatar-img" :src="item.pet?.avatar || '/static/default-pet.png'" mode="aspectFill" />
               <view class="user-detail">
-                <text class="user-name">{{ item.name }}</text>
-                <view class="user-tag" :class="item.tagClass">{{ item.tag }}</view>
+                <text class="user-name">{{ item.pet?.name || '未知' }}</text>
+                <view class="user-tag orange-tag">{{ item.pet?.breed || '萌宠' }}</view>
               </view>
             </view>
-            <text class="diary-time">{{ item.time }}</text>
+            <text class="diary-time">{{ formatTime(item.createdAt) }}</text>
           </view>
           <text class="diary-content">{{ item.content }}</text>
+        </view>
+        <view class="empty-state" v-if="diaryList.length === 0">
+          <text class="empty-text">暂无动态，快去写第一篇日记吧</text>
         </view>
       </view>
     </view>
@@ -160,32 +141,92 @@
       <text class="order-arrow">→</text>
     </view>
 
+    <!-- 公告弹窗 -->
+    <view class="notice-modal" v-if="showAnnouncement" @tap="showAnnouncement = false">
+      <view class="notice-modal-content" @tap.stop>
+        <text class="notice-modal-title">📢 平台公告</text>
+        <scroll-view class="notice-list" scroll-y>
+          <view class="notice-item" v-for="a in announcements" :key="a.id">
+            <text class="notice-item-title">{{ a.title }}</text>
+            <text class="notice-item-content">{{ a.content }}</text>
+            <text class="notice-item-time">{{ a.createdAt?.slice(0,10) }}</text>
+          </view>
+        </scroll-view>
+        <view class="notice-close" @tap="showAnnouncement = false"><text>关闭</text></view>
+      </view>
+    </view>
+
     <!-- 底部安全区域 -->
     <view class="safe-bottom"></view>
   </view>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
+import { request } from '@/api/request';
 
-const diaryList = ref([
-  {
-    avatar: '🐱',
-    name: '小猫咪',
-    tag: '宠物达人',
-    tagClass: 'orange-tag',
-    time: '2小时前',
-    content: '今天带主子去公园玩了，它追着蝴蝶跑了好久，累坏了回来就睡了一下午，真是可爱的小家伙！'
-  },
-  {
-    avatar: '🐶',
-    name: '汪汪队',
-    tag: '新手铲屎官',
-    tagClass: 'green-tag',
-    time: '5小时前',
-    content: '我家旺财今天学会握手了！训练了整整一周，终于成功了，太开心了！'
-  }
-]);
+const STATIC_ICONS = ['🐕', '🛁', '🐱', '💉', '🏠', '✂️', '🦴', '🧹'];
+
+const announcements = ref([]);
+const showAnnouncement = ref(false);
+const diaryList = ref([]);
+const services = ref([]);
+const topServices = ref([]);
+const stats = reactive({ petCount: '--', orderCount: '--', diaryCount: '--', favCount: '--' });
+
+onShow(async () => {
+  loadAnnouncements();
+  loadStats();
+  loadServices();
+  loadDiaryFeed();
+});
+
+async function loadAnnouncements() {
+  try {
+    const res = await request({ url: '/announcements' });
+    announcements.value = res.data || [];
+  } catch { /* ignore */ }
+}
+
+async function loadStats() {
+  try {
+    const res = await request({ url: '/users/me/stats' });
+    const d = res.data || {};
+    stats.petCount = d.petCount ?? '--';
+    stats.orderCount = d.orderCount ?? '--';
+    stats.diaryCount = d.diaryCount ?? '--';
+    stats.favCount = d.favCount ?? '--';
+  } catch { /* ignore */ }
+}
+
+async function loadServices() {
+  try {
+    const res = await request({ url: '/services' });
+    const list = (res.data || []).map((s, i) => ({
+      ...s,
+      icon: STATIC_ICONS[i % STATIC_ICONS.length],
+    }));
+    services.value = list;
+    topServices.value = list.slice(0, 2);
+  } catch { /* ignore */ }
+}
+
+async function loadDiaryFeed() {
+  try {
+    const res = await request({ url: '/diaries/feed?pageSize=5' });
+    diaryList.value = res.data?.list || [];
+  } catch { /* ignore */ }
+}
+
+function formatTime(dateStr) {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const hours = Math.floor(diff / 3600000);
+  if (hours < 1) return '刚刚';
+  if (hours < 24) return hours + '小时前';
+  return Math.floor(hours / 24) + '天前';
+}
 
 function navigateTo(url) {
   uni.navigateTo({ url });
@@ -490,15 +531,11 @@ function switchTab(url) {
   align-items: center;
 }
 
-.avatar {
+.avatar-img {
   width: 64rpx;
   height: 64rpx;
   border-radius: 50%;
   background: #FFF3E8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32rpx;
   margin-right: 12rpx;
 }
 
@@ -578,6 +615,26 @@ function switchTab(url) {
   font-size: 32rpx;
   color: #F5895A;
 }
+
+/* 公告栏 */
+.notice-bar {
+  margin: 16rpx 20rpx; padding: 16rpx 20rpx;
+  background: #FFF3E8; border-radius: 12rpx;
+  display: flex; align-items: center; gap: 12rpx;
+}
+.notice-icon { font-size: 28rpx; }
+.notice-text { flex: 1; font-size: 26rpx; color: #F5895A; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notice-more { font-size: 22rpx; color: #9E8E7E; }
+/* 公告弹窗 */
+.notice-modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); z-index: 999; display: flex; align-items: center; justify-content: center; }
+.notice-modal-content { width: 85%; max-height: 70vh; background: #fff; border-radius: 20rpx; padding: 32rpx; }
+.notice-modal-title { font-size: 34rpx; font-weight: 600; color: #2D2016; display: block; margin-bottom: 20rpx; text-align: center; }
+.notice-list { max-height: 50vh; }
+.notice-item { padding: 16rpx 0; border-bottom: 1rpx solid #F5F0EA; }
+.notice-item-title { font-size: 28rpx; font-weight: 500; color: #2D2016; display: block; }
+.notice-item-content { font-size: 26rpx; color: #9E8E7E; display: block; margin: 8rpx 0; }
+.notice-item-time { font-size: 22rpx; color: #C4B8AD; }
+.notice-close { margin-top: 20rpx; text-align: center; padding: 16rpx; background: #F5895A; color: #fff; border-radius: 40rpx; font-size: 28rpx; }
 
 .safe-bottom {
   height: env(safe-area-inset-bottom);

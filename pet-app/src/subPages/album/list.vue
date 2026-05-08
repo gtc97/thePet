@@ -28,6 +28,7 @@
 <script setup>
 import { ref } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
+import { BASE_URL } from '@/api/request';
 import { getPetDetail } from '@/api/pet';
 import { getPhotos, addPhotos } from '@/api/album';
 
@@ -73,7 +74,7 @@ function handleUpload() {
       for (const fp of res.tempFilePaths) {
         const r = await new Promise((resolve, reject) => {
           uni.uploadFile({
-            url: 'http://localhost:3000/api/v1/upload/image',
+            url: BASE_URL + '/upload/image',
             filePath: fp,
             name: 'file',
             formData: { module: 'pet_photos' },

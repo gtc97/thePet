@@ -1,5 +1,5 @@
 // API请求封装
-const BASE_URL = 'http://localhost:3000/api/v1';
+export const BASE_URL = 'http://localhost:3000/api/v1';
 
 let isRefreshing = false;
 let refreshQueue = [];

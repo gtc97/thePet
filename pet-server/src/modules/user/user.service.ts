@@ -3,6 +3,17 @@ import { AppError } from '../../middleware/errorHandler';
 import { signToken } from '../../utils/jwt';
 
 export class UserService {
+  // 获取用户统计数据聚合
+  async getStats(userId: number) {
+    const [petCount, diaryCount, photoCount, orderCount] = await Promise.all([
+      prisma.pet.count({ where: { ownerId: userId } }),
+      prisma.petDiary.count({ where: { pet: { ownerId: userId } } }),
+      prisma.petPhoto.count({ where: { pet: { ownerId: userId } } }),
+      prisma.serviceOrder.count({ where: { ownerId: userId } }),
+    ]);
+    return { petCount, diaryCount, photoCount, orderCount };
+  }
+
   // 获取当前用户信息
   async getProfile(userId: number) {
     const user = await prisma.user.findUnique({

@@ -173,6 +173,22 @@ export class AdminService {
     return { list, total, page, pageSize };
   }
 
+  // 订单详情
+  async getOrderDetail(orderId: number) {
+    const order = await prisma.serviceOrder.findUnique({
+      where: { id: orderId },
+      include: {
+        owner: { select: { id: true, nickname: true, phone: true, avatar: true } },
+        provider: { select: { id: true, nickname: true, phone: true, avatar: true } },
+        statusLogs: { orderBy: { createdAt: 'asc' } },
+        reviews: { include: { reviewer: { select: { nickname: true } } } },
+        disputes: true,
+      },
+    });
+    if (!order) throw new AppError(404, '订单不存在');
+    return order;
+  }
+
   // 强制修改订单状态
   async forceOrderStatus(orderId: number, status: string) {
     await prisma.serviceOrder.update({ where: { id: orderId }, data: { status: status as any } });
@@ -244,6 +260,63 @@ export class AdminService {
 
   async updateFeedback(feedbackId: number, status: string, remark?: string) {
     return prisma.feedback.update({ where: { id: feedbackId }, data: { status, remark: remark || '' } });
+  }
+
+  // ─── 宠物管理 ───
+  async listPets(params: { name?: string; ownerPhone?: string; privacy?: string; isArchived?: string; page?: number; pageSize?: number }) {
+    const where: Record<string, unknown> = {};
+    if (params.name) where.name = { contains: params.name };
+    if (params.privacy) where.privacy = params.privacy;
+    if (params.isArchived !== undefined) where.isArchived = params.isArchived === 'true';
+    if (params.ownerPhone) {
+      where.owner = { phone: { contains: params.ownerPhone } };
+    }
+
+    const page = params.page || 1;
+    const pageSize = params.pageSize || 20;
+    const [list, total] = await Promise.all([
+      prisma.pet.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          owner: { select: { id: true, nickname: true, phone: true } },
+          _count: { select: { photos: true, diaries: true, albums: true } },
+        },
+      }),
+      prisma.pet.count({ where }),
+    ]);
+    return { list, total, page, pageSize };
+  }
+
+  // 宠物详情
+  async getPetDetail(petId: number) {
+    const pet = await prisma.pet.findUnique({
+      where: { id: petId },
+      include: {
+        owner: { select: { id: true, nickname: true, phone: true, avatar: true } },
+        photos: { take: 10, orderBy: { createdAt: 'desc' } },
+        diaries: { take: 5, orderBy: { createdAt: 'desc' }, select: { id: true, title: true, createdAt: true } },
+        _count: { select: { photos: true, diaries: true, albums: true, shares: true } },
+      },
+    });
+    if (!pet) throw new AppError(404, '宠物不存在');
+    return pet;
+  }
+
+  // 管理员编辑宠物（审核/隐藏/归档）
+  async updatePet(petId: number, data: { name?: string; privacy?: string; isArchived?: boolean }) {
+    const pet = await prisma.pet.findUnique({ where: { id: petId } });
+    if (!pet) throw new AppError(404, '宠物不存在');
+    const updateData: Record<string, unknown> = {};
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.privacy !== undefined) updateData.privacy = data.privacy;
+    if (data.isArchived !== undefined) {
+      updateData.isArchived = data.isArchived;
+      updateData.archivedAt = data.isArchived ? new Date() : null;
+    }
+    return prisma.pet.update({ where: { id: petId }, data: updateData });
   }
 
   // 系统配置

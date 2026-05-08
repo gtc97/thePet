@@ -49,6 +49,10 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useUserStore } from '@/store/user';
+import { request } from '@/api/request';
+
+const userStore = useUserStore();
 
 const themes = [
   { key: 'warm', name: '暖棕色', color: '#C8956C' },
@@ -59,7 +63,7 @@ const themes = [
 ];
 
 const currentTheme = ref(uni.getStorageSync('theme') || 'warm');
-const chatDisabled = ref(false);
+const chatDisabled = ref(userStore.userInfo?.chatDisabled || false);
 
 const themeColor = computed(() => {
   const t = themes.find(t => t.key === currentTheme.value);
@@ -69,25 +73,18 @@ const themeColor = computed(() => {
 function handleThemeChange(key) {
   currentTheme.value = key;
   uni.setStorageSync('theme', key);
-  // 动态更新CSS变量
-  const styles = {
-    warm: { '--theme-primary': '#C8956C', '--theme-primary-light': '#F5EDE3', '--theme-primary-dark': '#A0724A' },
-    blue: { '--theme-primary': '#409EFF', '--theme-primary-light': '#ECF5FF', '--theme-primary-dark': '#337ECC' },
-    green: { '--theme-primary': '#67C23A', '--theme-primary-light': '#F0F9EB', '--theme-primary-dark': '#529B2E' },
-    pink: { '--theme-primary': '#F0989B', '--theme-primary-light': '#FEF0F1', '--theme-primary-dark': '#D07A7D' },
-    purple: { '--theme-primary': '#9B7EC4', '--theme-primary-light': '#F3EFF9', '--theme-primary-dark': '#7C65A0' },
-  };
-  // 小程序环境通过 setPageStyle 设置
-  const vars = styles[key];
-  Object.entries(vars).forEach(([k, v]) => {
-    document?.documentElement?.style?.setProperty(k, v);
-  });
+  // 切换主题后重启到首页使CSS变量生效
   uni.showToast({ title: `已切换为${themes.find(t=>t.key===key).name}`, icon: 'success' });
+  setTimeout(() => {
+    uni.reLaunch({ url: '/pages/index/index' });
+  }, 600);
 }
 
 async function handleToggle(type, value) {
-  if (type === 'chat') chatDisabled.value = value;
-  // TODO: 调用API保存设置
+  if (type === 'chat') {
+    chatDisabled.value = value;
+    try { await request({ url: '/users/me', method: 'PUT', data: { chatDisabled: value } }); } catch { /* */ }
+  }
 }
 
 function navigateTo(url) {

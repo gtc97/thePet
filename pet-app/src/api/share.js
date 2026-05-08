@@ -21,6 +21,10 @@ export function likeShare(id) {
   return request({ url: `/shares/${id}/like`, method: 'POST' });
 }
 
+export function unlikeShare(id) {
+  return request({ url: `/shares/${id}/like`, method: 'DELETE' });
+}
+
 export function deleteShare(id) {
   return request({ url: `/shares/${id}`, method: 'DELETE' });
 }
@@ -36,4 +40,8 @@ export function addFavorite(targetType, targetId) {
 
 export function removeFavorite(id) {
   return request({ url: `/favorites/${id}`, method: 'DELETE' });
+}
+
+export function removeFavoriteByTarget(targetType, targetId) {
+  return request({ url: `/favorites/target/${targetType}/${targetId}`, method: 'DELETE' });
 }

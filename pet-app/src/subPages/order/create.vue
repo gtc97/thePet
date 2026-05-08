@@ -73,17 +73,38 @@ import { ref, reactive } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import { getPets } from '@/api/pet';
 import { createOrder } from '@/api/order';
+import { request } from '@/api/request';
+
+const SERVICE_ICONS = ['🦴', '💧', '🧹', '🏠', '🐕', '🛁', '✂️', '💉'];
 
 const today = new Date().toISOString().slice(0, 10);
 const pets = ref([]);
 const selectedPets = ref([]);
+const services = ref([]);
 
-const services = [
-  { value: 'feeding', name: '喂食', icon: '🦴', price: 30 },
-  { value: 'water', name: '换水', icon: '💧', price: 10 },
-  { value: 'litter', name: '铲屎', icon: '🧹', price: 20 },
-  { value: 'clean', name: '环境清理', icon: '🏠', price: 25 },
-];
+onLoad(async () => {
+  loadPets();
+  loadServices();
+});
+
+async function loadPets() {
+  try {
+    const res = await getPets({ isArchived: false });
+    pets.value = res.data?.list || [];
+  } catch { /* ignore */ }
+}
+
+async function loadServices() {
+  try {
+    const res = await request({ url: '/services' });
+    services.value = (res.data || []).map((s, i) => ({
+      value: s.name,
+      name: s.name,
+      icon: SERVICE_ICONS[i % SERVICE_ICONS.length],
+      price: s.price,
+    }));
+  } catch { /* ignore */ }
+}
 
 const timeSlots = [
   { value: 'morning', label: '上午 (8-12点)' },
@@ -99,11 +120,6 @@ const form = reactive({
   timeSlot: '',
   price: 0,
   ownerNote: '',
-});
-
-onLoad(async () => {
-  const res = await getPets({ archived: '0' });
-  pets.value = (res.data || []).filter(p => !p.isArchived);
 });
 
 function togglePet(id) {

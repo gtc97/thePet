@@ -46,6 +46,14 @@ router.post('/:id/like', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// 取消点赞
+router.delete('/:id/like', async (req, res, next) => {
+  try {
+    const data = await shareService.unlike(parseInt(req.params.id));
+    res.json(success(data, '已取消点赞'));
+  } catch (err) { next(err); }
+});
+
 // 创建分享 — 需登录
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {

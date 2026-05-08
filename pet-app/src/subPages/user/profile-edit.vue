@@ -28,7 +28,7 @@
 <script setup>
 import { ref, reactive } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import { request } from '@/api/request';
+import { request, BASE_URL } from '@/api/request';
 import { useUserStore } from '@/store/user';
 
 const userStore = useUserStore();
@@ -51,7 +51,7 @@ function handleChooseAvatar() {
     success: async (res) => {
       uni.showLoading({ title: '上传中...' });
       uni.uploadFile({
-        url: 'http://localhost:3000/api/v1/upload/image',
+        url: BASE_URL + '/upload/image',
         filePath: res.tempFilePaths[0],
         name: 'file',
         formData: { module: 'avatars' },

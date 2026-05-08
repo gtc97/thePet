@@ -25,7 +25,7 @@
     <view class="stats-row">
       <text class="views">👁 {{ share.viewCount }}次浏览</text>
       <text class="likes">❤ {{ share.likeCount }}次点赞</text>
-      <view class="like-btn" @tap="handleLike"><text>❤ 点赞</text></view>
+      <view class="like-btn" :class="{ liked }" @tap="handleLike"><text>{{ liked ? '❤ 已点赞' : '🤍 点赞' }}</text></view>
     </view>
 
     <!-- 宠物详情 -->
@@ -49,9 +49,10 @@
 <script setup>
 import { ref } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import { getShareByCode, likeShare } from '@/api/share';
+import { getShareByCode, likeShare, unlikeShare } from '@/api/share';
 
 const share = ref(null);
+const liked = ref(false); // 当前用户是否已点赞（本地状态）
 
 onLoad(async (options) => {
   const code = options.code || '';
@@ -66,9 +67,19 @@ function genderLabel(g) {
 }
 
 async function handleLike() {
-  await likeShare(share.value.id);
-  share.value.likeCount++;
-  uni.showToast({ title: '已点赞', icon: 'success' });
+  try {
+    if (liked.value) {
+      await unlikeShare(share.value.id);
+      share.value.likeCount = Math.max(0, share.value.likeCount - 1);
+      liked.value = false;
+      uni.showToast({ title: '已取消点赞', icon: 'none' });
+    } else {
+      await likeShare(share.value.id);
+      share.value.likeCount++;
+      liked.value = true;
+      uni.showToast({ title: '已点赞', icon: 'success' });
+    }
+  } catch { /* */ }
 }
 </script>
 

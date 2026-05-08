@@ -33,13 +33,22 @@ export class FavoriteService {
     });
   }
 
-  // 取消收藏
+  // 取消收藏（按收藏ID）
   async remove(favoriteId: number, userId: number) {
     const fav = await prisma.favorite.findFirst({
       where: { id: favoriteId, userId },
     });
     if (!fav) throw new AppError(404, '收藏不存在');
     return prisma.favorite.delete({ where: { id: favoriteId } });
+  }
+
+  // 取消收藏（按目标类型和ID）
+  async removeByTarget(userId: number, targetType: string, targetId: number) {
+    const fav = await prisma.favorite.findFirst({
+      where: { userId, targetType, targetId },
+    });
+    if (!fav) throw new AppError(404, '收藏不存在');
+    return prisma.favorite.delete({ where: { id: fav.id } });
   }
 }
 

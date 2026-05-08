@@ -24,6 +24,10 @@ export function archivePet(id) {
   return request({ url: `/pets/${id}/archive`, method: 'POST' });
 }
 
+export function unarchivePet(id) {
+  return request({ url: `/pets/${id}/unarchive`, method: 'POST' });
+}
+
 export function getPetStats(id) {
   return request({ url: `/pets/${id}/stats`, method: 'GET' });
 }

@@ -105,6 +105,7 @@
 import { ref, reactive } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import { usePetStore } from '@/store/pet';
+import { archivePet, unarchivePet } from '@/api/pet';
 
 const petStore = usePetStore();
 const pet = ref(null);
@@ -134,9 +135,9 @@ async function handleToggleArchive() {
       if (res.confirm) {
         try {
           if (pet.value.isArchived) {
-            // await unarchivePet(pet.value.id);
+            await unarchivePet(pet.value.id);
           } else {
-            // await archivePet(pet.value.id);
+            await archivePet(pet.value.id);
           }
           pet.value.isArchived = !pet.value.isArchived;
           uni.showToast({ title: `${action}成功`, icon: 'success' });

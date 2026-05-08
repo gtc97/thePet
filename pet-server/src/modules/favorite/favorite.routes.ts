@@ -28,4 +28,12 @@ router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response, ne
   } catch (err) { next(err); }
 });
 
+// 按目标取消收藏
+router.delete('/target/:type/:id', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    await favoriteService.removeByTarget(req.user!.userId, req.params.type, parseInt(req.params.id));
+    res.json(success(null, '已取消收藏'));
+  } catch (err) { next(err); }
+});
+
 export default router;

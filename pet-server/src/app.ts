@@ -35,6 +35,58 @@ app.use(express.urlencoded({ extended: true }));
 // 静态文件服务（上传资源）
 app.use('/uploads', express.static(path.resolve(config.upload.dir)));
 
+// ─── 公开API（必须在嵌套路由之前注册，避免被 :id 参数路由捕获） ───
+
+app.get('/api/v1/services', async (_req, res) => {
+  try {
+    const { default: prisma } = await import('./config/database');
+    const cfg = await prisma.systemConfig.findUnique({ where: { key: 'services' } });
+    res.json({ code: 0, data: cfg?.value ? JSON.parse(cfg.value) : [] });
+  } catch { res.json({ code: 0, data: [] }); }
+});
+
+app.get('/api/v1/diaries/feed', async (req, res) => {
+  try {
+    const { default: prisma } = await import('./config/database');
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    const [list, total] = await Promise.all([
+      prisma.petDiary.findMany({
+        where: { pet: { privacy: 'PUBLIC', isArchived: false } },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          pet: { select: { id: true, name: true, avatar: true, breed: true } },
+        },
+      }),
+      prisma.petDiary.count({ where: { pet: { privacy: 'PUBLIC', isArchived: false } } }),
+    ]);
+    const data = list.map(d => ({
+      id: d.id,
+      title: d.title,
+      content: d.content?.slice(0, 150),
+      images: d.images,
+      isPinned: d.isPinned,
+      pet: d.pet,
+      createdAt: d.createdAt,
+    }));
+    res.json({ code: 0, data: { list, total, page, pageSize } });
+  } catch { res.json({ code: 0, data: { list: [], total: 0, page: 1, pageSize: 10 } }); }
+});
+
+app.get('/api/v1/announcements', async (_req, res) => {
+  try {
+    const { default: prisma } = await import('./config/database');
+    const cfg = await prisma.systemConfig.findUnique({ where: { key: 'announcements' } });
+    res.json({ code: 0, data: cfg?.value ? JSON.parse(cfg.value) : [] });
+  } catch { res.json({ code: 0, data: [] }); }
+});
+
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // ─── API路由注册 ──────────────────────────────────
 
 app.use('/api/v1/auth', authRoutes);               // 认证
@@ -57,9 +109,44 @@ app.use('/api/v1/admin', adminRoutes);              // 管理端
 app.use('/api/v1/map', mapRoutes);                  // 地图
 app.use('/api/v1/feedback', feedbackRoutes);         // 反馈
 
-// 健康检查
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// 服务类型（公开接口）
+app.get('/api/v1/services', async (_req, res) => {
+  try {
+    const { default: prisma } = await import('./config/database');
+    const cfg = await prisma.systemConfig.findUnique({ where: { key: 'services' } });
+    res.json({ code: 0, data: cfg?.value ? JSON.parse(cfg.value) : [] });
+  } catch { res.json({ code: 0, data: [] }); }
+});
+
+// 日记动态（公开接口）
+app.get('/api/v1/diaries/feed', async (req, res) => {
+  try {
+    const { default: prisma } = await import('./config/database');
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    const [list, total] = await Promise.all([
+      prisma.petDiary.findMany({
+        where: { pet: { privacy: 'PUBLIC', isArchived: false } },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          pet: { select: { id: true, name: true, avatar: true, breed: true } },
+        },
+      }),
+      prisma.petDiary.count({ where: { pet: { privacy: 'PUBLIC', isArchived: false } } }),
+    ]);
+    const data = list.map(d => ({
+      id: d.id,
+      title: d.title,
+      content: d.content?.slice(0, 150),
+      images: d.images,
+      isPinned: d.isPinned,
+      pet: d.pet,
+      createdAt: d.createdAt,
+    }));
+    res.json({ code: 0, data: { list, total, page, pageSize } });
+  } catch { res.json({ code: 0, data: { list: [], total: 0, page: 1, pageSize: 10 } }); }
 });
 
 // ─── 统一错误处理 ──────────────────────────────────

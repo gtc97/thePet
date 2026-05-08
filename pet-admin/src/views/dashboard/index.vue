@@ -16,8 +16,8 @@
         <el-table-column prop="description" label="描述" />
         <el-table-column prop="createdAt" label="提交时间" width="180" />
         <el-table-column label="操作" width="120">
-          <template #default>
-            <el-button type="primary" size="small" link>处理</el-button>
+          <template #default="{ row }">
+            <el-button type="primary" size="small" link @click="handleTask(row)">处理</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -27,7 +27,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import api from '@/api';
+
+const router = useRouter();
 
 const statCards = ref([
   { label: '总用户数', value: '--' },
@@ -53,6 +56,12 @@ onMounted(async () => {
     ].filter(t => !t.description.startsWith('0'));
   } catch { /* ignore */ }
 });
+
+function handleTask(task: any) {
+  if (task.type === '资质审核') router.push({ path: '/users', query: { qualification: 'pending' } });
+  else if (task.type === '售后申诉') router.push('/disputes');
+  else if (task.type === '用户反馈') router.push('/feedbacks');
+}
 </script>
 
 <style scoped>

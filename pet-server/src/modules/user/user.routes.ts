@@ -4,6 +4,10 @@ import { authMiddleware } from '../../middleware/auth';
 
 const router = Router();
 
+router.get('/me/stats', authMiddleware, (req, res, next) =>
+  userController.getStats(req, res, next)
+);
+
 router.get('/me', authMiddleware, (req, res, next) =>
   userController.getProfile(req, res, next)
 );

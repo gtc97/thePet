@@ -115,6 +115,16 @@ export class ShareService {
     });
   }
 
+  // 取消点赞
+  async unlike(shareId: number) {
+    const share = await prisma.petShare.findUnique({ where: { id: shareId } });
+    if (!share) throw new AppError(404, '分享不存在');
+    return prisma.petShare.update({
+      where: { id: shareId },
+      data: { likeCount: { decrement: share.likeCount > 0 ? 1 : 0 } },
+    });
+  }
+
   // 删除分享
   async delete(shareId: number, userId: number) {
     const share = await prisma.petShare.findFirst({

@@ -15,8 +15,13 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
+import { useAdminStore } from '@/stores/admin';
 import Sidebar from './Sidebar.vue';
 import Header from './Header.vue';
+
+const store = useAdminStore();
+onMounted(() => { store.fetchProfile().catch(() => {}); });
 </script>
 
 <style scoped>

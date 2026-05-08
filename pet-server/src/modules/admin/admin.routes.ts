@@ -99,10 +99,46 @@ router.get('/orders', async (req: AuthRequest, res: Response, next: NextFunction
   } catch (err) { next(err); }
 });
 
+router.get('/orders/:id', async (req, res, next) => {
+  try {
+    const data = await adminService.getOrderDetail(parseInt(req.params.id));
+    res.json(success(data));
+  } catch (err) { next(err); }
+});
+
 router.put('/orders/:id/status', async (req, res, next) => {
   try {
     await adminService.forceOrderStatus(parseInt(req.params.id), req.body.status);
     res.json(success(null, '状态已变更'));
+  } catch (err) { next(err); }
+});
+
+// ─── 宠物管理 ───
+router.get('/pets', async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const data = await adminService.listPets({
+      name: req.query.name as string,
+      ownerPhone: req.query.ownerPhone as string,
+      privacy: req.query.privacy as string,
+      isArchived: req.query.isArchived as string,
+      page: parseInt(req.query.page as string) || 1,
+      pageSize: parseInt(req.query.pageSize as string) || 20,
+    });
+    res.json(success(data));
+  } catch (err) { next(err); }
+});
+
+router.get('/pets/:id', async (req, res, next) => {
+  try {
+    const data = await adminService.getPetDetail(parseInt(req.params.id));
+    res.json(success(data));
+  } catch (err) { next(err); }
+});
+
+router.put('/pets/:id', async (req, res, next) => {
+  try {
+    const data = await adminService.updatePet(parseInt(req.params.id), req.body);
+    res.json(success(data, '宠物信息已更新'));
   } catch (err) { next(err); }
 });
 
