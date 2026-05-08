@@ -3,11 +3,11 @@
     <view class="login-logo">
       <text class="logo-icon">🐾</text>
       <text class="logo-title">thePet</text>
-      <text class="logo-desc">宠物档案记录与上门喂养</text>
+      <text class="logo-desc">记录毛孩子的每一个瞬间</text>
     </view>
 
     <view class="login-form">
-      <!-- 手机号输入 -->
+      <!-- 手机号 -->
       <view class="form-item">
         <text class="form-label">手机号</text>
         <input
@@ -16,11 +16,11 @@
           type="number"
           maxlength="11"
           placeholder="请输入手机号"
-          placeholder-style="color:#C0C4CC"
+          placeholder-style="color:#C4B8AD"
         />
       </view>
 
-      <!-- 验证码输入 -->
+      <!-- 验证码 -->
       <view class="form-item">
         <text class="form-label">验证码</text>
         <view class="code-row">
@@ -30,15 +30,16 @@
             type="number"
             maxlength="6"
             placeholder="请输入验证码"
-            placeholder-style="color:#C0C4CC"
+            placeholder-style="color:#C4B8AD"
           />
           <view class="code-btn" :class="{ disabled: countdown > 0 }" @tap="handleSendCode">
             <text>{{ countdown > 0 ? `${countdown}s` : '获取验证码' }}</text>
           </view>
         </view>
+        <text class="code-tip" v-if="debugCode">开发模式验证码：{{ debugCode }}</text>
       </view>
 
-      <!-- 手机验证码登录 -->
+      <!-- 登录按钮 -->
       <view class="login-btn" @tap="handleLogin">
         <text>登录</text>
       </view>
@@ -50,7 +51,7 @@
         <view class="divider-line" />
       </view>
 
-      <!-- 微信手机号授权登录 -->
+      <!-- 微信手机号快捷登录 -->
       <button
         class="wechat-btn"
         open-type="getPhoneNumber"
@@ -80,6 +81,7 @@ const userStore = useUserStore();
 const phone = ref('');
 const code = ref('');
 const countdown = ref(0);
+const debugCode = ref('');
 
 async function handleSendCode() {
   if (countdown.value > 0) return;
@@ -88,7 +90,11 @@ async function handleSendCode() {
     return;
   }
   try {
-    await sendSmsCode(phone.value, 'login');
+    const res = await sendSmsCode(phone.value, 'login');
+    // 开发环境直接展示验证码，生产对接短信后去掉
+    if (res.data?.code) {
+      debugCode.value = res.data.code;
+    }
     uni.showToast({ title: '验证码已发送', icon: 'success' });
     countdown.value = 60;
     const timer = setInterval(() => {
@@ -110,7 +116,7 @@ async function handleLogin() {
     return;
   }
   try {
-    uni.showLoading({ title: '登录中...' });
+    uni.showLoading({ title: '登录中...', mask: true });
     await userStore.login(phone.value, code.value);
     uni.hideLoading();
     uni.showToast({ title: '登录成功', icon: 'success' });
@@ -121,13 +127,12 @@ async function handleLogin() {
   }
 }
 
-// 微信手机号授权登录
 function handleGetPhoneNumber(e) {
   // #ifdef MP-WEIXIN
   if (e.detail.errMsg !== 'getPhoneNumber:ok') {
     return;
   }
-  uni.showLoading({ title: '登录中...' });
+  uni.showLoading({ title: '登录中...', mask: true });
   uni.login({
     provider: 'weixin',
     success: async (loginRes) => {
@@ -164,7 +169,7 @@ function handleGetPhoneNumber(e) {
 .logo-icon { font-size: 80rpx; display: block; }
 .logo-title { font-size: 48rpx; font-weight: bold; color: #2D2016; display: block; margin: 12rpx 0 8rpx; }
 .logo-desc { font-size: 26rpx; color: #9E8E7E; }
-.form-item { margin-bottom: 28rpx; }
+.form-item { margin-bottom: 24rpx; }
 .form-label { font-size: 28rpx; color: #2D2016; display: block; margin-bottom: 10rpx; font-weight: 500; }
 .form-input { width: 100%; height: 88rpx; border: 2rpx solid #F5F0EA; border-radius: 16rpx; padding: 0 24rpx; font-size: 28rpx; background: #fff; box-sizing: border-box; }
 .code-row { display: flex; gap: 16rpx; }
@@ -174,7 +179,8 @@ function handleGetPhoneNumber(e) {
   display: flex; align-items: center; justify-content: center;
   font-size: 26rpx; color: #F5895A; font-weight: 500;
 }
-.code-btn.disabled { color: #C4B8AD; background: #F5F0EA; }
+.code-btn.disabled { background: #F5F0EA; color: #C4B8AD; }
+.code-tip { font-size: 22rpx; color: #67C23A; margin-top: 8rpx; display: block; }
 .login-btn {
   width: 100%; height: 96rpx; background: #F5895A; border-radius: 48rpx;
   display: flex; align-items: center; justify-content: center;
@@ -190,6 +196,6 @@ function handleGetPhoneNumber(e) {
 }
 .wechat-btn::after { border: none; }
 .wechat-icon { font-size: 36rpx; }
-.agreement { text-align: center; font-size: 22rpx; color: #9E8E7E; margin-top: 40rpx; }
+.agreement { text-align: center; font-size: 22rpx; color: #9E8E7E; margin-top: 60rpx; }
 .agreement .link { color: #F5895A; }
 </style>

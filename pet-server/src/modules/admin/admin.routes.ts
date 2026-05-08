@@ -2,6 +2,7 @@ import { Router, Response, NextFunction } from 'express';
 import { adminService } from './admin.service';
 import { adminAuth } from '../../middleware/adminAuth';
 import { AuthRequest, success } from '../../types';
+import prisma from '../../config/database';
 
 const router = Router();
 
@@ -163,6 +164,84 @@ router.put('/feedbacks/:id', async (req, res, next) => {
   try {
     const data = await adminService.updateFeedback(parseInt(req.params.id), req.body.status, req.body.remark);
     res.json(success(data, '状态已更新'));
+  } catch (err) { next(err); }
+});
+
+// ─── 评价管理 ───
+router.get('/reviews', async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 20;
+    const [list, total] = await Promise.all([
+      prisma.review.findMany({ skip: (page-1)*pageSize, take: pageSize, orderBy: { createdAt: 'desc' },
+        include: { reviewer: { select: { id: true, nickname: true } }, reviewee: { select: { id: true, nickname: true } } } }),
+      prisma.review.count(),
+    ]);
+    res.json(success({ list, total, page, pageSize }));
+  } catch (err) { next(err); }
+});
+
+router.delete('/reviews/:id', async (req, res, next) => {
+  try {
+    await prisma.review.delete({ where: { id: parseInt(req.params.id) } });
+    res.json(success(null, '已删除'));
+  } catch (err) { next(err); }
+});
+
+// ─── 聊天记录查看 ───
+router.get('/chat-messages', async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 20;
+    const [list, total] = await Promise.all([
+      prisma.chatMessage.findMany({ skip: (page-1)*pageSize, take: pageSize, orderBy: { createdAt: 'desc' },
+        include: { sender: { select: { id: true, nickname: true } }, room: { select: { orderId: true } } } }),
+      prisma.chatMessage.count(),
+    ]);
+    res.json(success({ list, total, page, pageSize }));
+  } catch (err) { next(err); }
+});
+
+router.delete('/chat-messages/:id', async (req, res, next) => {
+  try {
+    await prisma.chatMessage.delete({ where: { id: parseInt(req.params.id) } });
+    res.json(success(null, '已删除'));
+  } catch (err) { next(err); }
+});
+
+// ─── 平台公告 ───
+router.get('/announcements', async (_req, res, next) => {
+  try {
+    const value = await adminService.getConfig('announcements');
+    res.json(success(value ? JSON.parse(value) : []));
+  } catch (err) { next(err); }
+});
+
+router.post('/announcements', async (req, res, next) => {
+  try {
+    const existing = await adminService.getConfig('announcements');
+    const list = existing ? JSON.parse(existing) : [];
+    list.push({ id: Date.now(), title: req.body.title, content: req.body.content, createdAt: new Date().toISOString() });
+    await adminService.setConfig('announcements', JSON.stringify(list));
+    res.json(success(null, '公告已发布'));
+  } catch (err) { next(err); }
+});
+
+router.delete('/announcements/:id', async (req, res, next) => {
+  try {
+    const existing = await adminService.getConfig('announcements');
+    const list = existing ? JSON.parse(existing) : [];
+    const filtered = list.filter((a: any) => a.id !== parseInt(req.params.id));
+    await adminService.setConfig('announcements', JSON.stringify(filtered));
+    res.json(success(null, '已删除'));
+  } catch (err) { next(err); }
+});
+
+// ─── 直播监控（预留） ───
+router.get('/live-rooms', async (_req, res, next) => {
+  try {
+    const rooms = await prisma.liveRoom.findMany({ orderBy: { createdAt: 'desc' }, take: 20 });
+    res.json(success(rooms));
   } catch (err) { next(err); }
 });
 

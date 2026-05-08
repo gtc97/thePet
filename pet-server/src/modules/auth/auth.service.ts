@@ -7,8 +7,8 @@ import { AppError } from '../../middleware/errorHandler';
 import { getRedis } from '../../config/redis';
 
 export class AuthService {
-  // 发送短信验证码
-  async sendSmsCode(phone: string, type: string): Promise<void> {
+  // 发送短信验证码（开发环境返回明文code，生产对接短信平台后去掉）
+  async sendSmsCode(phone: string, type: string): Promise<{ code: string }> {
     const allowed = await checkSmsRateLimit(phone);
     if (!allowed) {
       throw new AppError(429, '发送过于频繁，请60秒后再试');
@@ -24,7 +24,8 @@ export class AuthService {
       // Redis不可用时继续
     }
 
-    await sendSms(phone, code);
+    // 生产环境对接短信平台后启用
+    // await sendSms(phone, code);
 
     // 同时存DB做记录
     await prisma.smsCode.create({
@@ -35,6 +36,9 @@ export class AuthService {
         expiresAt: new Date(Date.now() + 5 * 60 * 1000),
       },
     });
+
+    // 开发环境返回验证码（生产对接短信平台后删除此返回）
+    return { code };
   }
 
   // 验证码登录（含自动注册）

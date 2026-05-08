@@ -10,6 +10,7 @@ const router = Router();
 router.get('/rooms/:orderId', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const orderId = parseInt(req.params.orderId);
+    if (isNaN(orderId)) throw new AppError(400, '参数错误：订单ID无效');
     const order = await prisma.serviceOrder.findUnique({ where: { id: orderId } });
     if (!order) throw new AppError(404, '订单不存在');
     if (order.ownerId !== req.user!.userId && order.providerId !== req.user!.userId) {

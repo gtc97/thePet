@@ -5,8 +5,8 @@ import { AuthRequest, success } from '../../types';
 export class AuthController {
   async sendSmsCode(req: Request, res: Response, next: NextFunction) {
     try {
-      await authService.sendSmsCode(req.body.phone, req.body.type);
-      res.json(success(null, '验证码已发送'));
+      const result = await authService.sendSmsCode(req.body.phone, req.body.type);
+      res.json(success(result, '验证码已发送'));
     } catch (err) {
       next(err);
     }

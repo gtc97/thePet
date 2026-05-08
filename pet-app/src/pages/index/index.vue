@@ -8,7 +8,7 @@
             <text class="greeting-text">你好，铲屎官</text>
             <text class="greeting-title">开启今天的萌宠之旅</text>
           </view>
-          <view class="message-btn" @tap="navigateTo('/subPages/chat/room')">
+          <view class="message-btn" @tap="switchTab('/pages/message/index')">
             <view class="message-icon">📩</view>
             <view class="badge"></view>
           </view>
@@ -189,6 +189,9 @@ const diaryList = ref([
 
 function navigateTo(url) {
   uni.navigateTo({ url });
+}
+function switchTab(url) {
+  uni.switchTab({ url });
 }
 </script>
 

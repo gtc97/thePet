@@ -35,6 +35,11 @@ const inputText = ref('');
 const scrollTo = ref('');
 
 onLoad(async (options) => {
+  if (!options.orderId) {
+    uni.showToast({ title: '缺少订单信息', icon: 'none' });
+    setTimeout(() => uni.navigateBack(), 1000);
+    return;
+  }
   const roomRes = await getChatRoom(options.orderId);
   roomId.value = roomRes.data.id;
   const msgRes = await getMessages(roomId.value);
