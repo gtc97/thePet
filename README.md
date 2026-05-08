@@ -65,10 +65,11 @@ cd pet-admin
 npm install
 npm run dev               # → http://localhost:5173
 
-# 5. 启动用户端（需HBuilderX或UniApp CLI）
+# 5. 编译小程序
 cd pet-app
 npm install
-# 使用HBuilderX打开pet-app目录，选择运行到微信小程序/H5/APP
+npm run build:mp-weixin
+# 用微信开发者工具打开 dist/build/mp-weixin/ 目录
 ```
 
 ### 开发阶段
