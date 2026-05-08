@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { authService } from './auth.service';
-import { success } from '../../types';
+import { AuthRequest, success } from '../../types';
 
 export class AuthController {
   async sendSmsCode(req: Request, res: Response, next: NextFunction) {
@@ -34,9 +34,25 @@ export class AuthController {
     try {
       const result = await authService.wechatLogin(req.body.code);
       res.json(success(result, '登录成功'));
-    } catch (err) {
-      next(err);
-    }
+    } catch (err) { next(err); }
+  }
+
+  // 微信手机号登录
+  async wechatLoginWithPhone(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await authService.wechatLoginWithPhone(
+        req.body.code, req.body.encryptedData, req.body.iv
+      );
+      res.json(success(result, '登录成功'));
+    } catch (err) { next(err); }
+  }
+
+  // 绑定微信到已有账号
+  async bindWechat(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      await authService.bindWechat(req.user!.userId, req.body.code);
+      res.json(success(null, '微信绑定成功'));
+    } catch (err) { next(err); }
   }
 
   async register(req: Request, res: Response, next: NextFunction) {

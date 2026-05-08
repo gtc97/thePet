@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { loginByCode, sendSmsCode } from '@/api/auth';
+import { loginByCode, wechatLogin, wechatPhoneLogin } from '@/api/auth';
 import { request } from '@/api/request';
 
 export const useUserStore = defineStore('user', () => {
@@ -40,6 +40,30 @@ export const useUserStore = defineStore('user', () => {
     return res;
   }
 
+  // 微信code登录
+  async function loginByWechat(code) {
+    const res = await wechatLogin(code);
+    token.value = res.data.accessToken;
+    uni.setStorageSync('access_token', res.data.accessToken);
+    uni.setStorageSync('refresh_token', res.data.refreshToken);
+    // 保存session_key用于后续手机号解密
+    if (res.data.session_key) {
+      uni.setStorageSync('wx_session_key', res.data.session_key);
+    }
+    await fetchProfile();
+    return res;
+  }
+
+  // 微信手机号授权登录
+  async function loginByWechatPhone(code, encryptedData, iv) {
+    const res = await wechatPhoneLogin(code, encryptedData, iv);
+    token.value = res.data.accessToken;
+    uni.setStorageSync('access_token', res.data.accessToken);
+    uni.setStorageSync('refresh_token', res.data.refreshToken);
+    await fetchProfile();
+    return res;
+  }
+
   async function switchRole(role) {
     const res = await request({ url: '/users/me/roles', method: 'PUT', data: { role } });
     token.value = res.data.token;
@@ -61,6 +85,6 @@ export const useUserStore = defineStore('user', () => {
   return {
     token, userInfo, currentRole,
     isLoggedIn, isOwner, isProvider, isQualified,
-    login, fetchProfile, switchRole, logout,
+    login, loginByWechat, loginByWechatPhone, fetchProfile, switchRole, logout,
   };
 });

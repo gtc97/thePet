@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authController } from './auth.controller';
 import { validate } from '../../middleware/validator';
+import { authMiddleware } from '../../middleware/auth';
 import {
   sendSmsSchema,
   loginByCodeSchema,
@@ -25,6 +26,16 @@ router.post('/login-by-password', validate(loginByPasswordSchema), (req, res, ne
 
 router.post('/wechat-login', (req, res, next) =>
   authController.wechatLogin(req, res, next)
+);
+
+// 微信手机号授权登录
+router.post('/wechat-phone-login', (req, res, next) =>
+  authController.wechatLoginWithPhone(req, res, next)
+);
+
+// 绑定微信到已登录账号
+router.post('/bind-wechat', authMiddleware, (req, res, next) =>
+  authController.bindWechat(req, res, next)
 );
 
 router.post('/register', validate(registerSchema), (req, res, next) =>

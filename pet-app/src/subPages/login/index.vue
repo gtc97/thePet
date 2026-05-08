@@ -43,11 +43,22 @@
         <text>登录 / 注册</text>
       </view>
 
-      <!-- 微信登录 -->
+      <!-- 微信一键登录（code换openid） -->
       <view class="wechat-login">
         <view class="wechat-btn" @tap="handleWechatLogin">
           <text>微信一键登录</text>
         </view>
+      </view>
+
+      <!-- 微信手机号授权登录（获取真实手机号） -->
+      <view class="wechat-login" style="margin-top:16rpx;">
+        <button
+          class="wechat-phone-btn"
+          open-type="getPhoneNumber"
+          @getphonenumber="handleGetPhoneNumber"
+        >
+          微信手机号授权登录
+        </button>
       </view>
 
       <!-- 协议 -->
@@ -113,22 +124,65 @@ async function handleLogin() {
   }
 }
 
+// 微信code登录
 function handleWechatLogin() {
   // #ifdef MP-WEIXIN
+  uni.showLoading({ title: '登录中...' });
   uni.login({
     provider: 'weixin',
     success: async (loginRes) => {
       try {
-        await userStore.wechatLogin(loginRes.code);
-        uni.switchTab({ url: '/pages/index/index' });
+        await userStore.loginByWechat(loginRes.code);
+        uni.hideLoading();
+        uni.showToast({ title: '登录成功', icon: 'success' });
+        setTimeout(() => uni.switchTab({ url: '/pages/index/index' }), 500);
       } catch (e) {
+        uni.hideLoading();
         uni.showToast({ title: e.message || '微信登录失败', icon: 'none' });
       }
+    },
+    fail: () => {
+      uni.hideLoading();
+      uni.showToast({ title: '微信授权取消', icon: 'none' });
     },
   });
   // #endif
   // #ifndef MP-WEIXIN
   uni.showToast({ title: '请在小程序中使用微信登录', icon: 'none' });
+  // #endif
+}
+
+// 微信手机号授权登录
+function handleGetPhoneNumber(e) {
+  // #ifdef MP-WEIXIN
+  if (e.detail.errMsg !== 'getPhoneNumber:ok') {
+    uni.showToast({ title: '手机号授权取消', icon: 'none' });
+    return;
+  }
+  uni.showLoading({ title: '登录中...' });
+  // 先wx.login获取code，再结合手机号加密数据
+  uni.login({
+    provider: 'weixin',
+    success: async (loginRes) => {
+      try {
+        await userStore.loginByWechatPhone(
+          loginRes.code,
+          e.detail.encryptedData,
+          e.detail.iv
+        );
+        uni.hideLoading();
+        uni.showToast({ title: '登录成功', icon: 'success' });
+        setTimeout(() => uni.switchTab({ url: '/pages/index/index' }), 500);
+      } catch (err) {
+        uni.hideLoading();
+        uni.showToast({ title: err.message || '登录失败', icon: 'none' });
+      }
+    },
+    fail: () => {
+      uni.hideLoading();
+      uni.showToast({ title: '微信登录失败', icon: 'none' });
+    },
+  });
   // #endif
 }
 </script>
@@ -161,6 +215,12 @@ function handleWechatLogin() {
 }
 .wechat-login { text-align: center; margin-bottom: 40rpx; }
 .wechat-btn { color: #67C23A; font-size: 28rpx; }
+.wechat-phone-btn {
+  width: 100%; height: 96rpx;
+  background: #67C23A; color: #fff; font-size: 32rpx; font-weight: 600;
+  border-radius: 48rpx; border: none; line-height: 96rpx;
+}
+.wechat-phone-btn::after { border: none; }
 .agreement { text-align: center; font-size: 22rpx; color: #909399; }
 .agreement .link { color: var(--theme-primary); }
 </style>

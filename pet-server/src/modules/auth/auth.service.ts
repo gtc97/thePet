@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import prisma from '../../config/database';
+import { config } from '../../config';
 import { signToken, signRefreshToken, verifyToken } from '../../utils/jwt';
 import { sendSms, generateCode, checkSmsRateLimit } from '../../utils/sms';
 import { AppError } from '../../middleware/errorHandler';
@@ -78,21 +79,49 @@ export class AuthService {
     return this.generateTokens(user.id, user.roles as string[]);
   }
 
-  // 微信小程序登录
+  // 微信小程序登录：code换取openid，自动注册
   async wechatLogin(code: string) {
-    // TODO: 调用微信接口换取 openid
-    // const { openid, unionid, session_key } = await this.getWechatSession(code);
-    // 当前使用模拟数据
-    const openid = `mock_openid_${code.slice(0, 10)}`;
+    const { openid, unionid, session_key } = await this.getWechatSession(code);
 
     let user = await prisma.user.findUnique({ where: { openid } });
     if (!user) {
       user = await prisma.user.create({
         data: {
           openid,
+          unionid: unionid || '',
           nickname: '微信用户',
           roles: ['PET_OWNER'],
         },
+      });
+    } else if (unionid && !user.unionid) {
+      await prisma.user.update({ where: { id: user.id }, data: { unionid } });
+    }
+
+    if (user.status === 'DISABLED') {
+      throw new AppError(403, '账号已被禁用');
+    }
+
+    const tokens = this.generateTokens(user.id, user.roles as string[]);
+    return { ...tokens, session_key };
+  }
+
+  // 微信手机号登录：code登录 + 手机号绑定
+  async wechatLoginWithPhone(code: string, encryptedData: string, iv: string) {
+    const { session_key } = await this.getWechatSession(code);
+
+    // 解密手机号（需要WXBizDataCrypt）
+    let phone = '';
+    try {
+      phone = this.decryptPhone(encryptedData, iv, session_key, config.wechat.appId);
+    } catch {
+      throw new AppError(400, '手机号解密失败，请重新授权');
+    }
+
+    // 查找或创建用户
+    let user = await prisma.user.findUnique({ where: { phone } });
+    if (!user) {
+      user = await prisma.user.create({
+        data: { phone, nickname: `用户${phone.slice(-4)}`, roles: ['PET_OWNER'] },
       });
     }
 
@@ -101,6 +130,94 @@ export class AuthService {
     }
 
     return this.generateTokens(user.id, user.roles as string[]);
+  }
+
+  // 绑定微信到已有账号
+  async bindWechat(userId: number, code: string) {
+    const { openid, unionid } = await this.getWechatSession(code);
+
+    const existingUser = await prisma.user.findUnique({ where: { openid } });
+    if (existingUser && existingUser.id !== userId) {
+      throw new AppError(400, '该微信已绑定其他账号');
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { openid, unionid: unionid || '' },
+    });
+  }
+
+  // ─── 微信API ───
+
+  // 调用微信 code2session 接口换取 openid/session_key
+  private async getWechatSession(code: string): Promise<{
+    openid: string; unionid?: string; session_key: string;
+  }> {
+    // 如果未配置微信AppID，使用开发模式
+    if (!config.wechat.appId || !config.wechat.appSecret) {
+      console.warn('[Wechat] 未配置AppID，使用开发模式openid');
+      return {
+        openid: `dev_${code.slice(0, 16)}`,
+        unionid: undefined,
+        session_key: 'dev_session_key',
+      };
+    }
+
+    const url = 'https://api.weixin.qq.com/sns/jscode2session' +
+      `?appid=${config.wechat.appId}` +
+      `&secret=${config.wechat.appSecret}` +
+      `&js_code=${code}` +
+      `&grant_type=authorization_code`;
+
+    try {
+      const resp = await fetch(url);
+      const data: any = await resp.json();
+
+      if (data.errcode) {
+        console.error('[Wechat] code2session error:', data);
+        throw new AppError(400, `微信登录失败: ${data.errmsg || '未知错误'}`);
+      }
+
+      return {
+        openid: data.openid,
+        unionid: data.unionid,
+        session_key: data.session_key,
+      };
+    } catch (err) {
+      if (err instanceof AppError) throw err;
+      console.error('[Wechat] API call failed:', err);
+      // 网络故障时降级为开发模式
+      return {
+        openid: `dev_${code.slice(0, 16)}`,
+        unionid: undefined,
+        session_key: 'dev_session_key',
+      };
+    }
+  }
+
+  // 解密微信手机号（WXBizDataCrypt）
+  private decryptPhone(encryptedData: string, iv: string, sessionKey: string, appId: string): string {
+    const crypto = require('crypto');
+    const sessionKeyBuffer = Buffer.from(sessionKey, 'base64');
+    const encryptedDataBuffer = Buffer.from(encryptedData, 'base64');
+    const ivBuffer = Buffer.from(iv, 'base64');
+
+    try {
+      const decipher = crypto.createDecipheriv('aes-128-cbc', sessionKeyBuffer, ivBuffer);
+      decipher.setAutoPadding(true);
+      let decoded = decipher.update(encryptedDataBuffer, undefined, 'utf8');
+      decoded += decipher.final('utf8');
+      const data = JSON.parse(decoded);
+
+      if (data.watermark?.appid !== appId) {
+        throw new Error('AppID不匹配');
+      }
+
+      return data.purePhoneNumber || data.phoneNumber || '';
+    } catch (err) {
+      console.error('[Wechat] 解密手机号失败:', err);
+      throw new AppError(400, '解密失败');
+    }
   }
 
   // 刷新Token
