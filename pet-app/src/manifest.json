@@ -1,49 +1,49 @@
 {
-  "name": "thePet",
-  "appid": "",
-  "description": "宠物档案记录与上门喂养",
-  "versionName": "1.0.0",
-  "versionCode": "100",
-  "transformPx": false,
-  "mp-weixin": {
-    "appid": "",
-    "setting": {
-      "urlCheck": false,
-      "es6": true,
-      "minified": true
+    "name" : "thePet",
+    "appid" : "__UNI__B6A3D9B",
+    "description" : "宠物档案记录与上门喂养",
+    "versionName" : "1.0.0",
+    "versionCode" : "100",
+    "transformPx" : false,
+    "mp-weixin" : {
+        "appid" : "",
+        "setting" : {
+            "urlCheck" : false,
+            "es6" : true,
+            "minified" : true
+        },
+        "usingComponents" : true,
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "需要获取您的位置信息以提供上门服务"
+            }
+        }
     },
-    "usingComponents": true,
-    "permission": {
-      "scope.userLocation": {
-        "desc": "需要获取您的位置信息以提供上门服务"
-      }
+    "app-plus" : {
+        "usingComponents" : true,
+        "nvueStyleCompiler" : "uni-app",
+        "compilerVersion" : 3,
+        "splashscreen" : {
+            "alwaysShowBeforeRender" : true,
+            "waiting" : true,
+            "autoclose" : true,
+            "delay" : 0
+        },
+        "modules" : {
+            "Maps" : {}
+        },
+        "distribute" : {
+            "android" : {
+                "permissions" : [
+                    "<uses-permission android:name=\"android.permission.CAMERA\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>"
+                ]
+            },
+            "ios" : {}
+        }
+    },
+    "h5" : {
+        "routerMode" : "history"
     }
-  },
-  "app-plus": {
-    "usingComponents": true,
-    "nvueStyleCompiler": "uni-app",
-    "compilerVersion": 3,
-    "splashscreen": {
-      "alwaysShowBeforeRender": true,
-      "waiting": true,
-      "autoclose": true,
-      "delay": 0
-    },
-    "modules": {
-      "Maps": {}
-    },
-    "distribute": {
-      "android": {
-        "permissions": [
-          "<uses-permission android:name=\"android.permission.CAMERA\"/>",
-          "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
-          "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>"
-        ]
-      },
-      "ios": {}
-    }
-  },
-  "h5": {
-    "routerMode": "history"
-  }
 }

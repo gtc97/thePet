@@ -2,418 +2,131 @@
   <view class="page-service">
     <view class="page-header">
       <view class="header-content">
-        <text class="main-title">服务</text>
-        <view class="book-btn" @tap="navigateTo('/subPages/order/create')">
-          <image src="/static/image/svg26.png" mode="aspectFit" class="book-icon" />
-          <text class="book-text">预约</text>
+        <text class="main-title">{{ isProvider ? '接单' : '服务' }}</text>
+        <view class="book-btn" v-if="!isProvider" @tap="navigateTo('/subPages/order/create')">
+          <text class="book-text">+ 预约</text>
+        </view>
+        <view class="book-btn" v-if="isProvider" @tap="switchView">
+          <text class="book-text">{{ showNearby ? '我的订单' : '附近订单' }}</text>
         </view>
       </view>
     </view>
 
+    <!-- 状态筛选Tab -->
     <view class="service-tabs">
-      <view
-        v-for="tab in tabs"
-        :key="tab.value"
-        class="tab-item"
-        :class="{ active: activeTab === tab.value }"
-        @tap="activeTab = tab.value"
-      >
+      <view v-for="tab in tabs" :key="tab.value" class="tab-item"
+        :class="{ active: activeTab === tab.value }" @tap="activeTab = tab.value; loadOrders()">
         <text>{{ tab.label }}</text>
       </view>
     </view>
 
-    <view class="quick-entry">
-      <view class="entry-card" @tap="navigateTo('/subPages/order/create')">
-        <view class="entry-icon-wrapper">
-          <text class="entry-icon">1</text>
-        </view>
-        <view class="entry-info">
-          <text class="entry-title">上门服务</text>
-          <text class="entry-desc">专业人员到家服务</text>
-        </view>
-        <image src="/static/image/svg25.png" mode="aspectFit" class="entry-arrow" />
-      </view>
-    </view>
-
-    <scroll-view class="service-list" scroll-y>
-      <view class="service-card" v-for="service in services" :key="service.id" @tap="navigateTo('/subPages/order/detail?id=' + service.id)">
+    <!-- 订单列表 -->
+    <scroll-view class="service-list" scroll-y @scrolltolower="loadMore">
+      <view class="order-card" v-for="order in orders" :key="order.id"
+        @tap="navigateTo('/subPages/order/detail?id=' + order.id)">
         <view class="card-header">
-          <view class="service-name-row">
-            <text class="service-name">{{ service.name }}</text>
-            <view class="hot-tag" v-if="service.isHot">热门</view>
-          </view>
+          <text class="order-no">#{{ order.orderNo }}</text>
+          <text class="order-status" :class="statusClass(order.status)">{{ statusLabel(order.status) }}</text>
         </view>
-
         <view class="card-body">
-          <view class="provider-info">
-            <view class="provider-avatar">
-              <text>{{ service.providerAvatar }}</text>
-            </view>
-            <view class="provider-detail">
-              <text class="provider-name">{{ service.providerName }}</text>
-              <view class="provider-rating">
-                <text class="star">★</text>
-                <text class="rating-value">{{ service.rating }}</text>
-              </view>
-            </view>
-            <view class="price-info">
-              <text class="price">¥{{ service.price }}</text>
-              <text class="price-unit">/{{ service.unit }}</text>
-            </view>
+          <view class="order-info-row">
+            <text class="order-type">{{ order.serviceType }}</text>
+            <text class="order-price">¥{{ order.price }}</text>
           </view>
-
-          <view class="service-tags">
-            <text class="tag" v-for="tag in service.tags" :key="tag">{{ tag }}</text>
-          </view>
-
-          <view class="card-footer">
-            <text class="service-desc">{{ service.desc }}</text>
-          </view>
+          <text class="order-date">{{ order.scheduledDate?.slice(0,10) }} {{ timeSlotLabel(order.timeSlot) }}</text>
+          <text class="order-addr">{{ order.address }}</text>
         </view>
-
-        <view class="book-action">
-          <view class="book-btn-small">立即预约</view>
+        <view class="card-footer" v-if="!showNearby">
+          <text>{{ isProvider ? '宠主：' + order.owner?.nickname : '师傅：' + (order.provider?.nickname || '待接单') }}</text>
         </view>
       </view>
 
-      <view class="empty-state" v-if="services.length === 0">
-        <text class="empty-icon">🛒</text>
-        <text class="empty-text">暂无服务</text>
+      <view class="empty-state" v-if="orders.length === 0">
+        <text class="empty-icon">📋</text>
+        <text class="empty-text">{{ isProvider ? '暂无附近订单' : '暂无订单' }}</text>
       </view>
     </scroll-view>
   </view>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onShow } from '@dcloudio/uni-app';
+import { getOrders, getNearbyOrders } from '@/api/order';
+import { useUserStore } from '@/store/user';
 
+const userStore = useUserStore();
+const isProvider = ref(false);
+const showNearby = ref(false);
 const activeTab = ref('all');
+const orders = ref([]);
+const page = ref(1);
+
 const tabs = [
   { label: '全部', value: 'all' },
-  { label: '上门服务', value: 'home' },
-  { label: '到店服务', value: 'store' },
-  { label: '寄养服务', value: 'boarding' },
+  { label: '待接单', value: 'PENDING' },
+  { label: '服务中', value: 'IN_PROGRESS' },
+  { label: '已完成', value: 'COMPLETED' },
 ];
 
-const services = ref([
-  {
-    id: '1',
-    name: '专业宠物美容',
-    isHot: true,
-    providerAvatar: 'A',
-    providerName: '张师傅',
-    rating: '4.9',
-    price: '128',
-    unit: '次',
-    tags: ['洗护', '剪毛', '造型'],
-    desc: '专业美容师一对一服务，让您的宠物焕然一新'
-  },
-  {
-    id: '2',
-    name: '宠物健康体检',
-    isHot: false,
-    providerAvatar: 'B',
-    providerName: '李医生',
-    rating: '4.8',
-    price: '198',
-    unit: '次',
-    tags: ['体检', '疫苗', '驱虫'],
-    desc: '全面健康检查，关爱宠物健康'
-  },
-  {
-    id: '3',
-    name: '宠物寄养',
-    isHot: true,
-    providerAvatar: 'C',
-    providerName: '王阿姨',
-    rating: '4.7',
-    price: '68',
-    unit: '天',
-    tags: ['寄养', '看护', '喂养'],
-    desc: '温馨家庭式寄养，让宠物不再孤单'
-  }
-]);
+const statusLabel = (s) => ({ PENDING:'待接单', ACCEPTED:'已接单', IN_PROGRESS:'服务中', COMPLETED:'已完成', CANCELLED:'已取消', DISPUTE:'申诉中' }[s] || s);
+const statusClass = (s) => ({ PENDING:'warn', ACCEPTED:'info', IN_PROGRESS:'primary', COMPLETED:'success', CANCELLED:'', DISPUTE:'danger' }[s] || '');
+const timeSlotLabel = (s) => ({ morning:'上午', afternoon:'下午', evening:'晚上' }[s] || s);
 
-function navigateTo(url) {
-  uni.navigateTo({ url });
+onShow(async () => {
+  isProvider.value = userStore.isProvider;
+  await loadOrders();
+});
+
+async function loadOrders() {
+  try {
+    const params = {};
+    if (activeTab.value !== 'all') params.status = activeTab.value;
+    if (isProvider.value) params.role = 'SERVICE_PROVIDER';
+    const res = showNearby.value ? await getNearbyOrders(page.value) : await getOrders(params);
+    orders.value = res.data?.list || [];
+  } catch { /* ignore */ }
 }
+
+function loadMore() {
+  page.value++;
+  loadOrders();
+}
+
+function switchView() {
+  showNearby.value = !showNearby.value;
+  page.value = 1;
+  loadOrders();
+}
+
+function navigateTo(url) { uni.navigateTo({ url }); }
 </script>
 
 <style scoped lang="scss">
-.page-service {
-  min-height: 100vh;
-  background: #FBF8F4;
-  display: flex;
-  flex-direction: column;
-}
-
-.page-header {
-  padding: 60rpx 32rpx 24rpx;
-  background: #FBF8F4;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.main-title {
-  font-size: 40rpx;
-  font-weight: 700;
-  color: #2D2016;
-}
-
-.book-btn {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  background: #F5895A;
-  padding: 12rpx 24rpx;
-  border-radius: 32rpx;
-}
-
-.book-icon {
-  width: 32rpx;
-  height: 32rpx;
-}
-
-.book-text {
-  font-size: 28rpx;
-  color: #fff;
-  font-weight: 600;
-}
-
-.service-tabs {
-  display: flex;
-  padding: 0 32rpx 24rpx;
-  gap: 16rpx;
-}
-
-.tab-item {
-  padding: 12rpx 28rpx;
-  border-radius: 32rpx;
-  font-size: 28rpx;
-  background: #F5F0EA;
-  color: #9E8E7E;
-  transition: all 0.3s;
-
-  &.active {
-    background: #F5895A;
-    color: #fff;
-  }
-}
-
-.quick-entry {
-  padding: 0 32rpx 24rpx;
-}
-
-.entry-card {
-  display: flex;
-  align-items: center;
-  background: #FFF3E8;
-  border-radius: 16rpx;
-  padding: 20rpx;
-}
-
-.entry-icon-wrapper {
-  width: 64rpx;
-  height: 64rpx;
-  border-radius: 50%;
-  background: rgba(245, 137, 90, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 16rpx;
-}
-
-.entry-icon {
-  font-size: 28rpx;
-  color: #F5895A;
-  font-weight: 600;
-}
-
-.entry-info {
-  flex: 1;
-}
-
-.entry-title {
-  font-size: 30rpx;
-  font-weight: 600;
-  color: #2D2016;
-  display: block;
-  margin-bottom: 4rpx;
-}
-
-.entry-desc {
-  font-size: 24rpx;
-  color: #9E8E7E;
-}
-
-.entry-arrow {
-  width: 32rpx;
-  height: 32rpx;
-}
-
-.service-list {
-  flex: 1;
-  width: 100%;
-  padding: 0 32rpx;
-  padding-bottom: 180rpx;
-  box-sizing: border-box;
-}
-
-.service-card {
-  background: #fff;
-  border-radius: 24rpx;
-  padding: 24rpx 24rpx 0;
-  margin-bottom: 24rpx;
-  box-shadow: 0 4rpx 32rpx rgba(213, 155, 106, 0.12);
-}
-
-.card-header {
-  margin-bottom: 16rpx;
-}
-
-.service-name-row {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-}
-
-.service-name {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #2D2016;
-}
-
-.hot-tag {
-  font-size: 22rpx;
-  padding: 4rpx 12rpx;
-  background: #E8FBF5;
-  color: #7ECFB3;
-  border-radius: 20rpx;
-}
-
-.card-body {
-  margin-bottom: 16rpx;
-}
-
-.provider-info {
-  display: flex;
-  align-items: center;
-  padding-bottom: 16rpx;
-  border-bottom: 1rpx solid #F5F0EA;
-}
-
-.provider-avatar {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 50%;
-  background: #F5F0EA;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 16rpx;
-}
-
-.provider-detail {
-  flex: 1;
-}
-
-.provider-name {
-  font-size: 28rpx;
-  color: #2D2016;
-  display: block;
-  margin-bottom: 4rpx;
-}
-
-.provider-rating {
-  display: flex;
-  align-items: center;
-  gap: 4rpx;
-}
-
-.star {
-  font-size: 24rpx;
-  color: #F7C96E;
-}
-
-.rating-value {
-  font-size: 24rpx;
-  color: #9E8E7E;
-}
-
-.price-info {
-  text-align: right;
-}
-
-.price {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #2D2016;
-}
-
-.price-unit {
-  font-size: 24rpx;
-  color: #9E8E7E;
-}
-
-.service-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10rpx;
-  padding: 16rpx 0;
-}
-
-.tag {
-  font-size: 22rpx;
-  padding: 6rpx 16rpx;
-  background: #FFF3E8;
-  color: #8B4513;
-  border-radius: 20rpx;
-}
-
-.card-footer {
-  padding-top: 8rpx;
-}
-
-.service-desc {
-  font-size: 26rpx;
-  color: #9E8E7E;
-  line-height: 1.5;
-}
-
-.book-action {
-  padding: 16rpx 0 24rpx;
-}
-
-.book-btn-small {
-  // width: 100%;
-  text-align: center;
-  padding: 20rpx;
-  background: #F5895A;
-  color: #fff;
-  border-radius: 16rpx;
-  font-size: 28rpx;
-  font-weight: 600;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 120rpx 0;
-  gap: 16rpx;
-}
-
-.empty-icon {
-  font-size: 80rpx;
-}
-
-.empty-text {
-  font-size: 28rpx;
-  color: #9E8E7E;
-}
+.page-service { min-height: 100vh; background: #FBF8F4; display: flex; flex-direction: column; }
+.page-header { padding: 60rpx 32rpx 24rpx; background: #FBF8F4; }
+.header-content { display: flex; justify-content: space-between; align-items: center; }
+.main-title { font-size: 40rpx; font-weight: 700; color: #2D2016; }
+.book-btn { display: flex; align-items: center; gap: 8rpx; background: var(--theme-primary, #F5895A); padding: 12rpx 24rpx; border-radius: 32rpx; }
+.book-text { font-size: 28rpx; color: #fff; font-weight: 600; }
+.service-tabs { display: flex; padding: 0 32rpx 24rpx; gap: 16rpx; }
+.tab-item { padding: 12rpx 28rpx; border-radius: 32rpx; font-size: 28rpx; background: #F5F0EA; color: #9E8E7E; }
+.tab-item.active { background: var(--theme-primary, #F5895A); color: #fff; }
+.service-list { flex: 1; padding: 0 32rpx; padding-bottom: 180rpx; }
+.order-card { background: #fff; border-radius: 16rpx; padding: 24rpx; margin-bottom: 16rpx; box-shadow: 0 2rpx 16rpx rgba(213,155,106,0.08); }
+.card-header { display: flex; justify-content: space-between; margin-bottom: 12rpx; }
+.order-no { font-size: 22rpx; color: #9E8E7E; }
+.order-status { font-size: 24rpx; padding: 4rpx 12rpx; border-radius: 12rpx; }
+.order-status.warn { background: #FDF6EC; color: #E6A23C; }
+.order-status.info { background: var(--theme-primary-light, #F5EDE3); color: var(--theme-primary, #C8956C); }
+.order-status.primary { background: var(--theme-primary-light, #F5EDE3); color: var(--theme-primary, #C8956C); }
+.order-status.success { background: #F0F9EB; color: #67C23A; }
+.order-status.danger { background: #FEF0F0; color: #F56C6C; }
+.order-info-row { display: flex; justify-content: space-between; margin-bottom: 8rpx; }
+.order-type { font-size: 30rpx; font-weight: 600; }
+.order-price { font-size: 32rpx; font-weight: 700; color: #2D2016; }
+.order-date, .order-addr { font-size: 24rpx; color: #9E8E7E; display: block; margin-top: 4rpx; }
+.card-footer { margin-top: 12rpx; padding-top: 12rpx; border-top: 1rpx solid #F5F0EA; font-size: 24rpx; color: #9E8E7E; }
+.empty-state { display: flex; flex-direction: column; align-items: center; padding: 120rpx 0; }
+.empty-icon { font-size: 80rpx; margin-bottom: 16rpx; }
+.empty-text { font-size: 28rpx; color: #9E8E7E; }
 </style>

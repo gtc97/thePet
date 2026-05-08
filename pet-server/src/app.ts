@@ -14,6 +14,13 @@ import photoRoutes from './modules/album/photo.routes';
 import diaryRoutes from './modules/diary/diary.routes';
 import shareRoutes from './modules/share/share.routes';
 import favoriteRoutes from './modules/favorite/favorite.routes';
+import orderRoutes from './modules/order/order.routes';
+import depositRoutes from './modules/deposit/deposit.routes';
+import reviewRoutes from './modules/review/review.routes';
+import disputeRoutes from './modules/dispute/dispute.routes';
+import blacklistRoutes from './modules/blacklist/blacklist.routes';
+import chatRoutes from './modules/chat/chat.routes';
+import notificationRoutes from './modules/notification/notification.routes';
 
 const app = express();
 
@@ -27,37 +34,22 @@ app.use('/uploads', express.static(path.resolve(config.upload.dir)));
 
 // ─── API路由注册 ──────────────────────────────────
 
-// 认证模块
-app.use('/api/v1/auth', authRoutes);
-
-// 用户模块
-app.use('/api/v1/users', userRoutes);
-
-// 上传模块
-app.use('/api/v1/upload', uploadRoutes);
-
-// 宠物档案模块
-app.use('/api/v1/pets', petRoutes);
-
-// 相册模块（嵌套路由：/pets/:petId/albums）
-app.use('/api/v1/pets/:petId/albums', albumRoutes);
-
-// 照片模块（嵌套路由：/pets/:petId/photos）
-app.use('/api/v1/pets/:petId/photos', photoRoutes);
-
-// 日记模块（嵌套路由：/pets/:petId/diaries）
-app.use('/api/v1/pets/:petId/diaries', diaryRoutes);
-
-// 分享模块
-app.use('/api/v1/shares', shareRoutes);
-
-// 收藏模块
-app.use('/api/v1/favorites', favoriteRoutes);
-
-// 订单模块（阶段3实现，占位）
-app.use('/api/v1/orders', (_req, res) => {
-  res.json({ code: 0, message: 'Order module — Phase 3', data: [] });
-});
+app.use('/api/v1/auth', authRoutes);               // 认证
+app.use('/api/v1/users', userRoutes);              // 用户
+app.use('/api/v1/upload', uploadRoutes);           // 上传
+app.use('/api/v1/pets', petRoutes);                // 宠物档案
+app.use('/api/v1/pets/:petId/albums', albumRoutes);  // 相册
+app.use('/api/v1/pets/:petId/photos', photoRoutes);  // 照片
+app.use('/api/v1/pets/:petId/diaries', diaryRoutes); // 日记
+app.use('/api/v1/shares', shareRoutes);            // 分享
+app.use('/api/v1/favorites', favoriteRoutes);      // 收藏
+app.use('/api/v1/orders', orderRoutes);            // 订单
+app.use('/api/v1/deposits', depositRoutes);        // 押金
+app.use('/api/v1', reviewRoutes);                  // 评价（嵌套路由）
+app.use('/api/v1', disputeRoutes);                 // 申诉（嵌套路由）
+app.use('/api/v1/blacklist', blacklistRoutes);     // 黑名单
+app.use('/api/v1/chat', chatRoutes);               // 聊天
+app.use('/api/v1/notifications', notificationRoutes); // 通知
 
 // 健康检查
 app.get('/api/health', (_req, res) => {
