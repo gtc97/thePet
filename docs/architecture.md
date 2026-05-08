@@ -34,6 +34,7 @@ src/
 ├── modules/         # 业务模块层（按领域拆分）
 │   ├── auth/        #  认证模块
 │   ├── user/        #  用户模块
+│   ├── admin/       #  管理端API
 │   ├── upload/      #  上传模块
 │   ├── pet/         #  宠物模块
 │   ├── album/       #  相册/照片模块
@@ -46,7 +47,10 @@ src/
 │   ├── dispute/     #  申诉模块
 │   ├── chat/        #  聊天模块
 │   ├── blacklist/   #  黑名单模块
-│   └── notification/#  通知模块
+│   ├── notification/#  通知模块
+│   ├── map/          #  地图代理
+│   ├── feedback/     #  用户反馈
+│   └── admin/        #  管理端API
 ├── utils/           # 工具函数层（JWT、SMS、文件存储）
 └── types/           # 类型定义层
 ```

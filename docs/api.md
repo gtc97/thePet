@@ -384,6 +384,30 @@ POST   /admin/deposits/:id/forfeit # 罚没押金
 GET    /admin/disputes           # 申诉列表
 PUT    /admin/disputes/:id/resolve # 处理申诉
 
+# 评价管理
+GET    /admin/reviews            # 评价列表
+DELETE /admin/reviews/:id        # 删除违规评价
+
+# 聊天管理
+GET    /admin/chat-messages      # 聊天记录列表
+DELETE /admin/chat-messages/:id  # 清理违规消息
+
+# 反馈管理
+GET    /admin/feedbacks          # 反馈列表
+PUT    /admin/feedbacks/:id      # 更新处理状态
+
+# 平台公告
+GET    /admin/announcements      # 公告列表
+POST   /admin/announcements      # 发布公告
+DELETE /admin/announcements/:id  # 删除公告
+
+# 直播监控（预留）
+GET    /admin/live-rooms         # 直播房间列表
+
+# 系统配置
+GET    /admin/config/:key        # 读取配置
+PUT    /admin/config/:key        # 更新配置
+
 # 反馈管理
 GET    /admin/feedbacks          # 反馈列表
 PUT    /admin/feedbacks/:id      # 更新处理状态
