@@ -26,7 +26,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import api from '@/api';
 
 const statCards = ref([
   { label: '总用户数', value: '--' },
@@ -36,6 +37,22 @@ const statCards = ref([
 ]);
 
 const pendingTasks = ref([]);
+
+onMounted(async () => {
+  try {
+    const res = await api.get('/admin/dashboard');
+    const d = res.data;
+    statCards.value[0].value = String(d.userCount);
+    statCards.value[1].value = String(d.petCount);
+    statCards.value[2].value = String(d.orderCount);
+    statCards.value[3].value = String(d.pendingDisputes + d.pendingQualifications + d.pendingFeedbacks);
+    pendingTasks.value = [
+      { type: '资质审核', description: `${d.pendingQualifications}条待审核`, createdAt: '' },
+      { type: '售后申诉', description: `${d.pendingDisputes}条待处理`, createdAt: '' },
+      { type: '用户反馈', description: `${d.pendingFeedbacks}条未读`, createdAt: '' },
+    ].filter(t => !t.description.startsWith('0'));
+  } catch { /* ignore */ }
+});
 </script>
 
 <style scoped>

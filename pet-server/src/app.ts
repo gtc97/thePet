@@ -21,6 +21,9 @@ import disputeRoutes from './modules/dispute/dispute.routes';
 import blacklistRoutes from './modules/blacklist/blacklist.routes';
 import chatRoutes from './modules/chat/chat.routes';
 import notificationRoutes from './modules/notification/notification.routes';
+import adminRoutes from './modules/admin/admin.routes';
+import mapRoutes from './modules/map/map.routes';
+import feedbackRoutes from './modules/feedback/feedback.routes';
 
 const app = express();
 
@@ -50,6 +53,9 @@ app.use('/api/v1', disputeRoutes);                 // 申诉（嵌套路由）
 app.use('/api/v1/blacklist', blacklistRoutes);     // 黑名单
 app.use('/api/v1/chat', chatRoutes);               // 聊天
 app.use('/api/v1/notifications', notificationRoutes); // 通知
+app.use('/api/v1/admin', adminRoutes);              // 管理端
+app.use('/api/v1/map', mapRoutes);                  // 地图
+app.use('/api/v1/feedback', feedbackRoutes);         // 反馈
 
 // 健康检查
 app.get('/api/health', (_req, res) => {

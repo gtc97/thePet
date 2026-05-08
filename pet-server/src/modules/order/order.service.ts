@@ -1,5 +1,6 @@
 import prisma from '../../config/database';
 import { AppError } from '../../middleware/errorHandler';
+import { pushOrderUpdate } from '../../utils/push';
 
 // 生成订单号：YYYYMMDD + 6位随机
 function generateOrderNo(): string {
@@ -93,6 +94,9 @@ export class OrderService {
       data: { orderId, fromStatus: 'PENDING', toStatus: 'ACCEPTED', operatorId: providerId, remark: '师傅已接单' },
     });
 
+    // 推送通知给宠主
+    await pushOrderUpdate(orderId, order.ownerId, providerId, '师傅已接单', `订单#${order.orderNo}已被接单`);
+
     return updated;
   }
 
@@ -123,6 +127,8 @@ export class OrderService {
     await prisma.orderStatusLog.create({
       data: { orderId, fromStatus: 'ACCEPTED', toStatus: 'IN_PROGRESS', operatorId: providerId, remark: '服务已开始' },
     });
+
+    await pushOrderUpdate(orderId, order.ownerId, providerId, '服务已开始', `师傅已到达并开始服务`);
 
     return updated;
   }
@@ -167,7 +173,7 @@ export class OrderService {
       data: { orderId, fromStatus: 'IN_PROGRESS', toStatus: 'COMPLETED', operatorId: providerId, remark: `服务完成，耗时${Math.floor(duration/60)}分钟` },
     });
 
-    // TODO: 72小时后自动确认（Redis延迟任务）
+    await pushOrderUpdate(orderId, order.ownerId, providerId, '服务已完成', '请查看服务成果并验收评价');
 
     return updated;
   }
@@ -199,6 +205,9 @@ export class OrderService {
     await prisma.orderStatusLog.create({
       data: { orderId, fromStatus: order.status, toStatus: 'CANCELLED', operatorId: userId, remark: `取消原因：${reason}` },
     });
+
+    const notifyId = userId === order.ownerId ? order.providerId : order.ownerId;
+    if (notifyId) await pushOrderUpdate(orderId, notifyId, null, '订单已取消', `原因：${reason}`);
 
     return updated;
   }

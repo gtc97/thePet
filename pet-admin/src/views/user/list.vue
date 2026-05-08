@@ -46,15 +46,15 @@
             <el-button size="small" @click="$router.push(`/users/${row.id}`)">详情</el-button>
             <el-button
               v-if="row.qualificationStatus === 'pending'"
-              type="success" size="small"
+              type="success" size="small" @click="handleApprove(row.id)"
             >通过</el-button>
             <el-button
               v-if="row.qualificationStatus === 'pending'"
-              type="danger" size="small"
+              type="danger" size="small" @click="handleReject(row.id)"
             >驳回</el-button>
             <el-button
               :type="row.status === 'ACTIVE' ? 'warning' : 'success'"
-              size="small"
+              size="small" @click="handleToggleStatus(row.id)"
             >{{ row.status === 'ACTIVE' ? '禁用' : '解封' }}</el-button>
           </template>
         </el-table-column>
@@ -64,13 +64,46 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { ElMessage } from 'element-plus';
+import api from '@/api';
 
 const query = ref({ phone: '', role: '', status: '', qualification: '' });
 const users = ref([]);
+const loading = ref(false);
 
-function fetchUsers() {
-  // TODO: API integration
+onMounted(() => fetchUsers());
+
+async function fetchUsers() {
+  loading.value = true;
+  try {
+    const res = await api.get('/admin/users', { params: query.value });
+    users.value = res.data.list || [];
+  } finally { loading.value = false; }
+}
+
+async function handleApprove(userId: number) {
+  try {
+    await api.post(`/admin/users/${userId}/approve-qualification`);
+    ElMessage.success('资质已通过');
+    fetchUsers();
+  } catch { /* ignore */ }
+}
+
+async function handleReject(userId: number) {
+  try {
+    await api.post(`/admin/users/${userId}/reject-qualification`, { remark: '资料不符合要求' });
+    ElMessage.success('已驳回');
+    fetchUsers();
+  } catch { /* ignore */ }
+}
+
+async function handleToggleStatus(userId: number) {
+  try {
+    await api.put(`/admin/users/${userId}/status`);
+    ElMessage.success('状态已更新');
+    fetchUsers();
+  } catch { /* ignore */ }
 }
 </script>
 
