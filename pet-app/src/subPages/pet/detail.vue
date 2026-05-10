@@ -82,8 +82,19 @@
     <!-- 历史服务记录 -->
     <view class="section">
       <text class="section-title">服务记录</text>
-      <view v-if="serviceRecords.length === 0" style="padding: 20rpx 0;">
-        <text style="color: #C0C4CC; font-size: 26rpx;">暂无服务记录</text>
+      <view v-if="serviceRecords.length === 0" class="empty-hint">暂无服务记录</view>
+      <view v-else class="record-list">
+        <view class="record-item" v-for="o in serviceRecords" :key="o.id" @tap="navigateTo('/subPages/order/detail?id=' + o.id)">
+          <view class="record-left">
+            <text class="record-type">{{ o.serviceType }}</text>
+            <text class="record-date">{{ o.scheduledDate?.slice(0,10) }}</text>
+          </view>
+          <view class="record-right">
+            <text class="record-price">¥{{ o.price }}</text>
+            <text class="record-status" :class="o.status">{{ {PENDING:'待接',ACCEPTED:'已接',PAID:'已付',IN_PROGRESS:'进行中',WAITING_CONFIRM:'待确认',COMPLETED:'完成',CANCELLED:'取消'}[o.status] }}</text>
+            <text class="record-arrow">→</text>
+          </view>
+        </view>
       </view>
     </view>
 
@@ -105,7 +116,8 @@
 import { ref, reactive } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import { usePetStore } from '@/store/pet';
-import { archivePet, unarchivePet } from '@/api/pet';
+import { archivePet, unarchivePet, getPetDetail } from '@/api/pet';
+import { request } from '@/api/request';
 
 const petStore = usePetStore();
 const pet = ref(null);
@@ -115,8 +127,16 @@ const stats = reactive({ days: 0, diaryCount: 0, photoCount: 0, orderCount: 0 })
 onLoad(async (options) => {
   if (options.id) {
     pet.value = await petStore.fetchPetDetail(options.id);
+    loadServiceRecords(options.id);
   }
 });
+
+async function loadServiceRecords(petId) {
+  try {
+    const res = await request({ url: `/pets/${petId}/orders` });
+    serviceRecords.value = res.data || [];
+  } catch { /* ignore */ }
+}
 
 function genderLabel(g) {
   return { MALE: '♂ 男生', FEMALE: '♀ 女生', UNKNOWN: '未知' }[g] || '未知';
@@ -178,6 +198,19 @@ async function handleToggleArchive() {
 .quick-icon { font-size: 40rpx; display: block; margin-bottom: 8rpx; }
 .quick-text { font-size: 22rpx; color: #606266; }
 .action-btns { display: flex; gap: 20rpx; }
-.action-btn { flex: 1; text-align: center; padding: 20rpx; background: #FFF3E8; border-radius: 12rpx; font-size: 26rpx; color: #F5895A; }
+.action-btn { flex: 1; text-align: center; padding: 20rpx; background: #FFF3E8; border-radius: 12rpx; font-size: 26rpx; color: var(--theme-primary); }
 .action-btn.warn { background: #fef0f0; color: #F56C6C; }
+.empty-hint { padding: 20rpx 0; color: #C0C4CC; font-size: 26rpx; }
+.record-list { display: flex; flex-direction: column; }
+.record-item { display: flex; justify-content: space-between; align-items: center; padding: 16rpx 0; border-bottom: 1rpx solid #F5F0EA; }
+.record-left { display: flex; flex-direction: column; }
+.record-type { font-size: 28rpx; font-weight: 500; color: #303133; }
+.record-date { font-size: 24rpx; color: #909399; margin-top: 4rpx; }
+.record-right { display: flex; align-items: center; gap: 12rpx; }
+.record-price { font-size: 28rpx; font-weight: 600; color: var(--theme-primary); }
+.record-status { font-size: 22rpx; padding: 4rpx 12rpx; border-radius: 20rpx; background: #F5F0EA; color: #909399; }
+.record-status.COMPLETED { background: #E8FBF5; color: #67C23A; }
+.record-status.IN_PROGRESS { background: #E8F4FF; color: #409EFF; }
+.record-status.PAID { background: #FFF3E8; color: var(--theme-primary); }
+.record-arrow { font-size: 24rpx; color: #C4B8AD; }
 </style>

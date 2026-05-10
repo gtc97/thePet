@@ -3,7 +3,7 @@
     <view class="list" v-if="reviews.length > 0">
       <view class="card" v-for="r in reviews" :key="r.id">
         <view class="card-header">
-          <image class="avatar" :src="r.reviewer?.avatar || '/static/default-avatar.png'" mode="aspectFill" />
+          <c-avatar :src="r.reviewer?.avatar" :name="r.reviewer?.nickname" size="sm" />
           <view class="user-info">
             <text class="name">{{ r.reviewer?.nickname || '用户' }}</text>
             <view class="stars">
@@ -52,5 +52,5 @@ onShow(async () => {
 .time { font-size: 22rpx; color: #C4B8AD; }
 .content { font-size: 26rpx; color: #2D2016; line-height: 1.6; display: block; }
 .tags { display: flex; gap: 8rpx; margin-top: 8rpx; flex-wrap: wrap; }
-.tag { background: #FFF3E8; color: #F5895A; font-size: 20rpx; padding: 4rpx 12rpx; border-radius: 10rpx; }
+.tag { background: #FFF3E8; color: var(--theme-primary); font-size: 20rpx; padding: 4rpx 12rpx; border-radius: 10rpx; }
 </style>

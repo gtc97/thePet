@@ -1,7 +1,7 @@
 /* ========================================
    thePet 全局公共样式系统
    默认：暖棕宠物风格
-   主题色：橙色 #F5895A
+   主题色：橙色 var(--theme-primary)
    背景：暖奶油 #FBF8F4
    深色：深棕 #2D2016
    副文：暖灰 #9E8E7E
@@ -9,11 +9,11 @@
 
 /* ── CSS 变量（动态切换主题） ── */
 page {
-  /* 主题色 */
+  /* 主题色 — 默认暖棕 */
   --theme-primary: #F5895A;
   --theme-primary-light: #FFF3E8;
   --theme-primary-dark: #D4723D;
-  --theme-gradient: linear-gradient(135deg, #F5895A 0%, #F7C96E 100%);
+  --theme-gradient: linear-gradient(135deg, var(--theme-primary) 0%, #F7C96E 100%);
   --theme-gradient-light: linear-gradient(135deg, rgba(245,137,90,0.08), rgba(247,201,110,0.08));
 
   /* 功能色 */
@@ -72,11 +72,11 @@ page {
 }
 
 /* ── SCSS 编译用变量 ── */
-$primary: #F5895A;
+$primary: var(--theme-primary);
 $primary-light: #FFF3E8;
 $primary-dark: #D4723D;
 $success: #7ECFB3;       $success-bg: #E8FBF5;
-$warning: #F5895A;       $warning-bg: #FFF3E8;
+$warning: var(--theme-primary);       $warning-bg: #FFF3E8;
 $danger: #FF6467;        $danger-bg: #FFF0F0;
 $info: #9E8E7E;          $info-bg: #F5F0EA;
 $text-dark: #2D2016;

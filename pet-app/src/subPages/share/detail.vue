@@ -48,6 +48,6 @@ onLoad(async (options) => {
 .stats { display: flex; gap: 24rpx; margin-bottom: 16rpx; font-size: 26rpx; color: #9E8E7E; }
 .share-row { display: flex; align-items: center; justify-content: space-between; }
 .share-code { font-size: 24rpx; color: #9E8E7E; }
-.share-btn { background: #F5895A; color: #fff; font-size: 24rpx; padding: 8rpx 20rpx; border-radius: 20rpx; border: none; line-height: 1.5; }
+.share-btn { background: var(--theme-primary); color: #fff; font-size: 24rpx; padding: 8rpx 20rpx; border-radius: 20rpx; border: none; line-height: 1.5; }
 .share-btn::after { border: none; }
 </style>

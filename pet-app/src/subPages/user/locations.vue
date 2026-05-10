@@ -67,9 +67,9 @@ async function handleDelete(id) {
 .card-body { margin-bottom: 12rpx; }
 .addr { font-size: 30rpx; color: #2D2016; display: block; }
 .city { font-size: 24rpx; color: #9E8E7E; margin-top: 4rpx; display: block; }
-.tag { display: inline-block; background: #FFF3E8; color: #F5895A; font-size: 20rpx; padding: 4rpx 12rpx; border-radius: 10rpx; margin-top: 8rpx; }
+.tag { display: inline-block; background: #FFF3E8; color: var(--theme-primary); font-size: 20rpx; padding: 4rpx 12rpx; border-radius: 10rpx; margin-top: 8rpx; }
 .card-actions { display: flex; gap: 32rpx; padding-top: 12rpx; border-top: 1rpx solid #F5F0EA; }
-.action { font-size: 26rpx; color: #F5895A; }
+.action { font-size: 26rpx; color: var(--theme-primary); }
 .action.danger { color: #FF6467; }
-.add-btn { margin: 40rpx 32rpx; background: #F5895A; color: #fff; text-align: center; padding: 24rpx; border-radius: 48rpx; font-size: 30rpx; font-weight: 600; }
+.add-btn { margin: 40rpx 32rpx; background: var(--theme-primary); color: #fff; text-align: center; padding: 24rpx; border-radius: 48rpx; font-size: 30rpx; font-weight: 600; }
 </style>

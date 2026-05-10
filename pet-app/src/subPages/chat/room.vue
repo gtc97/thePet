@@ -4,7 +4,7 @@
     <scroll-view class="msg-list" scroll-y :scroll-into-view="scrollTo" :scroll-with-animation="true">
       <view v-for="msg in messages" :key="msg.id" :id="'msg-'+msg.id"
         class="msg-item" :class="{ mine: msg.senderId === userId }">
-        <image class="msg-avatar" :src="msg.sender?.avatar || '/static/default-avatar.png'" mode="aspectFill" />
+        <c-avatar :src="msg.sender?.avatar" :name="msg.sender?.nickname" size="sm" />
         <view class="msg-bubble" :class="{ mine: msg.senderId === userId }">
           <image v-if="msg.type === 'image'" :src="msg.content" mode="widthFix" class="msg-image" @tap="previewImage(msg.content)" />
           <text v-else class="msg-text">{{ msg.content }}</text>
@@ -22,10 +22,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import { getChatRoom, getMessages, sendMessage } from '@/api/chat';
 import { useUserStore } from '@/store/user';
+import { BASE_URL } from '@/api/request';
 
 const userStore = useUserStore();
 const userId = ref(userStore.userInfo?.id || 0);
@@ -33,6 +34,7 @@ const roomId = ref(0);
 const messages = ref([]);
 const inputText = ref('');
 const scrollTo = ref('');
+let socketTask = null;
 
 onLoad(async (options) => {
   if (!options.orderId) {
@@ -45,15 +47,45 @@ onLoad(async (options) => {
   const msgRes = await getMessages(roomId.value);
   messages.value = msgRes.data?.list || [];
   scrollTo.value = 'msg-bottom';
-  // 简单的轮询（小程��中WebSocket受限时的fallback）
-  setInterval(pollMessages, 5000);
+  connectWS();
 });
 
-async function pollMessages() {
-  try {
-    const res = await getMessages(roomId.value);
-    if (res.data?.list) messages.value = res.data.list;
-  } catch { /* ignore */ }
+onUnmounted(() => {
+  if (socketTask) { socketTask.close(); socketTask = null; }
+});
+
+function connectWS() {
+  const token = uni.getStorageSync('access_token');
+  if (!token) return;
+
+  const wsUrl = BASE_URL.replace(/^http/, 'ws').replace('/api/v1', '') + `/ws?token=${token}`;
+  socketTask = uni.connectSocket({ url: wsUrl, success: () => {}, fail: () => {} });
+
+  socketTask.onOpen(() => {
+    socketTask.send({ data: JSON.stringify({ type: 'join-room', roomId: roomId.value }) });
+  });
+
+  socketTask.onMessage((res) => {
+    try {
+      const msg = JSON.parse(res.data);
+      // 只接收别人的消息（自己发的已乐观更新）
+      if (msg.senderId !== userId.value) {
+        messages.value.push(msg);
+        scrollTo.value = 'msg-bottom';
+      }
+    } catch { /* ignore */ }
+  });
+
+  socketTask.onError(() => {
+    uni.showToast({ title: '消息可能延迟', icon: 'none', duration: 2000 });
+    // WebSocket失败时回退到5秒轮询
+    setInterval(async () => {
+      try {
+        const res = await getMessages(roomId.value);
+        if (res.data?.list) messages.value = res.data.list;
+      } catch { /* ignore */ }
+    }, 5000);
+  });
 }
 
 async function handleSend() {
@@ -61,7 +93,6 @@ async function handleSend() {
   if (!text) return;
   try {
     await sendMessage(roomId.value, text);
-    // 乐观更新
     messages.value.push({
       id: Date.now(), roomId: roomId.value, senderId: userId.value,
       content: text, type: 'text', createdAt: new Date().toISOString(),

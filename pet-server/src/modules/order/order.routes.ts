@@ -46,9 +46,29 @@ router.post('/:id/start', authMiddleware, (req, res, next) =>
   orderController.start(req, res, next)
 );
 
+// 申请接单（师傅）
+router.post('/:id/apply', authMiddleware, (req, res, next) =>
+  orderController.apply(req, res, next)
+);
+
+// 选择师傅（宠主）
+router.post('/:id/select', authMiddleware, (req, res, next) =>
+  orderController.select(req, res, next)
+);
+
+// 确认付款（宠主）
+router.post('/:id/pay', authMiddleware, (req, res, next) =>
+  orderController.pay(req, res, next)
+);
+
 // 完成服务（师傅）
 router.post('/:id/complete', authMiddleware, validate(completeOrderSchema), (req, res, next) =>
   orderController.complete(req, res, next)
+);
+
+// 确认验收（宠主）
+router.post('/:id/confirm', authMiddleware, (req, res, next) =>
+  orderController.confirm(req, res, next)
 );
 
 // 取消订单

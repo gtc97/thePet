@@ -36,6 +36,10 @@
         <el-icon><ChatLineRound /></el-icon>
         <span>用户反馈</span>
       </el-menu-item>
+      <el-menu-item index="/warnings">
+        <el-icon><Bell /></el-icon>
+        <span>预警管理</span>
+      </el-menu-item>
       <el-menu-item index="/settings">
         <el-icon><Setting /></el-icon>
         <span>平台配置</span>

@@ -64,6 +64,6 @@ async function handleSave() {
 .textarea { width: 100%; height: 120rpx; border: 2rpx solid #F5F0EA; border-radius: 12rpx; padding: 16rpx; font-size: 28rpx; box-sizing: border-box; background: #FBF8F4; }
 .gender-row, .privacy-row { display: flex; gap: 16rpx; }
 .gender-opt, .privacy-opt { flex: 1; text-align: center; padding: 16rpx 0; border: 2rpx solid #F5F0EA; border-radius: 12rpx; font-size: 26rpx; color: #9E8E7E; }
-.gender-opt.active, .privacy-opt.active { border-color: #F5895A; color: #F5895A; background: #FFF3E8; }
-.submit-btn { margin: 40rpx 32rpx; background: #F5895A; color: #fff; text-align: center; padding: 24rpx; border-radius: 48rpx; font-size: 30rpx; font-weight: 600; }
+.gender-opt.active, .privacy-opt.active { border-color: var(--theme-primary); color: var(--theme-primary); background: #FFF3E8; }
+.submit-btn { margin: 40rpx 32rpx; background: var(--theme-primary); color: #fff; text-align: center; padding: 24rpx; border-radius: 48rpx; font-size: 30rpx; font-weight: 600; }
 </style>

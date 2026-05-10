@@ -7,7 +7,7 @@ import { AppError } from '../../middleware/errorHandler';
 const router = Router();
 
 // 提交评价
-router.post('/:orderId/reviews', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/:orderId(\\d+)/reviews', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const orderId = parseInt(req.params.orderId);
     const reviewerId = req.user!.userId;
@@ -50,7 +50,7 @@ router.post('/:orderId/reviews', authMiddleware, async (req: AuthRequest, res: R
 });
 
 // 查看订单评价
-router.get('/:orderId/reviews', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/:orderId(\\d+)/reviews', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const reviews = await prisma.review.findMany({
       where: { orderId: parseInt(req.params.orderId) },

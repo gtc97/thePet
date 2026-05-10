@@ -23,7 +23,7 @@ export class UserService {
         roles: true, status: true, province: true, city: true, district: true,
         address: true, bio: true, avgRating: true, totalOrders: true,
         depositPaid: true, qualificationStatus: true, chatDisabled: true,
-        createdAt: true,
+        settings: true, createdAt: true,
       },
     });
     if (!user) throw new AppError(404, '用户不存在');
@@ -37,9 +37,32 @@ export class UserService {
       select: {
         id: true, nickname: true, avatar: true, bio: true,
         avgRating: true, totalOrders: true, city: true,
+        level: true, points: true, roles: true, settings: true, providerServices: true,
       },
     });
     if (!user) throw new AppError(404, '用户不存在');
+
+    // 如果是师傅，附加最近评价和服务记录
+    const isProvider = (user.roles as string[])?.includes('SERVICE_PROVIDER');
+    if (isProvider) {
+      const [recentReviews, completedOrders, recentOrders] = await Promise.all([
+        prisma.review.findMany({
+          where: { revieweeId: userId },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          include: { reviewer: { select: { id: true, nickname: true, avatar: true } } },
+        }),
+        prisma.serviceOrder.count({ where: { providerId: userId, status: 'COMPLETED' } }),
+        prisma.serviceOrder.findMany({
+          where: { providerId: userId, status: 'COMPLETED' },
+          orderBy: { completedAt: 'desc' },
+          take: 5,
+          select: { id: true, orderNo: true, serviceType: true, price: true, completedAt: true, owner: { select: { id: true, nickname: true, avatar: true } } },
+        }),
+      ]);
+      return { ...user, recentReviews, completedOrders, recentOrders };
+    }
+
     return user;
   }
 
@@ -55,6 +78,7 @@ export class UserService {
     latitude?: number;
     longitude?: number;
     chatDisabled?: boolean;
+    settings?: object;
   }) {
     return prisma.user.update({
       where: { id: userId },

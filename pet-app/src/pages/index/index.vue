@@ -71,12 +71,8 @@
               <text class="stat-name">起</text>
             </view>
             <view class="stat-item">
-              <text class="stat-value">4.9</text>
-              <text class="stat-name">评分</text>
-            </view>
-            <view class="stat-item">
-              <text class="stat-value">附近</text>
-              <text class="stat-name">可约</text>
+              <text class="stat-value">预约</text>
+              <text class="stat-name">服务</text>
             </view>
           </view>
         </view>
@@ -115,7 +111,7 @@
         <view class="diary-card" v-for="item in diaryList" :key="item.id" @tap="navigateTo('/subPages/diary/detail?id=' + item.id)">
           <view class="diary-header">
             <view class="user-info">
-              <image class="avatar-img" :src="item.pet?.avatar || '/static/default-pet.png'" mode="aspectFill" />
+              <c-avatar :src="item.pet?.avatar" :name="item.pet?.name" size="sm" />
               <view class="user-detail">
                 <text class="user-name">{{ item.pet?.name || '未知' }}</text>
                 <view class="user-tag orange-tag">{{ item.pet?.breed || '萌宠' }}</view>
@@ -131,12 +127,36 @@
       </view>
     </view>
 
+    <!-- 推荐宠护师 -->
+    <view class="provider-section">
+      <view class="section-header">
+        <text class="section-title">推荐宠护师</text>
+        <view class="section-more" @tap="navigateTo('/subPages/user/provider-list')">
+          <text class="more-text">更多</text>
+          <text class="more-arrow">→</text>
+        </view>
+      </view>
+      <scroll-view scroll-x class="provider-scroll">
+        <view class="provider-card" v-for="p in topProviders" :key="p.id" @tap="navigateTo('/subPages/user/provider-profile?id=' + p.id)">
+          <c-avatar :src="p.avatar" :name="p.nickname" size="md" />
+          <text class="pv-name">{{ p.nickname }}</text>
+          <text class="pv-rating">⭐{{ p.avgRating?.toFixed(1) || '新手上路' }}</text>
+          <text class="pv-level">Lv.{{ p.level || 0 }} | {{ p.totalOrders || 0 }}单</text>
+        </view>
+        <view class="provider-card join" @tap="navigateTo('/subPages/user/qualification')">
+          <text class="join-icon">🎓</text>
+          <text class="pv-name">成为宠护师</text>
+          <text class="pv-rating">接单赚钱</text>
+        </view>
+      </scroll-view>
+    </view>
+
     <!-- 快速预约入口 -->
     <view class="quick-order" @tap="navigateTo('/subPages/order/create')">
       <view class="order-icon">🚀</view>
       <view class="order-info">
         <text class="order-title">一键预约服务</text>
-        <text class="order-desc">专业服务，安心托付</text>
+        <text class="order-desc">选择宠护师，安心托付</text>
       </view>
       <text class="order-arrow">→</text>
     </view>
@@ -173,13 +193,12 @@ const showAnnouncement = ref(false);
 const diaryList = ref([]);
 const services = ref([]);
 const topServices = ref([]);
+const topProviders = ref([]);
 const stats = reactive({ petCount: '--', orderCount: '--', diaryCount: '--', favCount: '--' });
 
-onShow(async () => {
-  loadAnnouncements();
-  loadStats();
-  loadServices();
-  loadDiaryFeed();
+onShow(() => {
+  // 并行加载首页所有数据
+  Promise.all([loadAnnouncements(), loadStats(), loadServices(), loadDiaryFeed(), loadProviders()]);
 });
 
 async function loadAnnouncements() {
@@ -219,6 +238,13 @@ async function loadDiaryFeed() {
   } catch { /* ignore */ }
 }
 
+async function loadProviders() {
+  try {
+    const res = await request({ url: '/providers?pageSize=6' });
+    topProviders.value = res.data?.list || [];
+  } catch { /* ignore */ }
+}
+
 function formatTime(dateStr) {
   if (!dateStr) return '';
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -244,7 +270,7 @@ function switchTab(url) {
 }
 
 .top-banner {
-  background: linear-gradient(135deg, #F5895A 0%, #F7C96E 100%);
+  background: linear-gradient(135deg, var(--theme-primary) 0%, #F7C96E 100%);
   padding: 60rpx 20rpx 30rpx;
   border-radius: 0 0 32rpx 32rpx;
 }
@@ -355,12 +381,12 @@ function switchTab(url) {
 
 .more-text {
   font-size: 26rpx;
-  color: #F5895A;
+  color: var(--theme-primary);
 }
 
 .more-arrow {
   font-size: 24rpx;
-  color: #F5895A;
+  color: var(--theme-primary);
   margin-left: 4rpx;
 }
 
@@ -441,7 +467,7 @@ function switchTab(url) {
 .stat-value {
   font-size: 28rpx;
   font-weight: 700;
-  color: #F5895A;
+  color: var(--theme-primary);
   margin-bottom: 2rpx;
 }
 
@@ -558,7 +584,7 @@ function switchTab(url) {
   
   &.orange-tag {
     background: #FFF3E8;
-    color: #F5895A;
+    color: var(--theme-primary);
   }
   
   &.green-tag {
@@ -577,6 +603,16 @@ function switchTab(url) {
   color: rgba(45, 32, 22, 0.8);
   line-height: 1.6;
 }
+
+.provider-section { padding: 0 20rpx 20rpx; }
+.provider-scroll { white-space: nowrap; padding: 8rpx 0; }
+.provider-card { display: inline-flex; flex-direction: column; align-items: center; width: 160rpx; background: #fff; border-radius: 16rpx; padding: 20rpx 0; margin-right: 16rpx; box-shadow: 0 2rpx 12rpx rgba(213,155,106,0.08); }
+.pv-avatar { width: 80rpx; height: 80rpx; border-radius: 50%; background: #F5F0EA; margin-bottom: 10rpx; }
+.pv-name { font-size: 26rpx; font-weight: 500; color: #2D2016; white-space: nowrap; max-width: 140rpx; overflow: hidden; text-overflow: ellipsis; }
+.pv-rating { font-size: 22rpx; color: #E6A23C; margin-top: 2rpx; }
+.pv-level { font-size: 20rpx; color: #9E8E7E; margin-top: 2rpx; }
+.provider-card.join { background: linear-gradient(135deg, #FFF3E8, #FFF8E8); border: 2rpx dashed var(--theme-primary); }
+.join-icon { font-size: 48rpx; margin-bottom: 8rpx; }
 
 .quick-order {
   margin: 0 20rpx 20rpx;
@@ -613,7 +649,7 @@ function switchTab(url) {
 
 .order-arrow {
   font-size: 32rpx;
-  color: #F5895A;
+  color: var(--theme-primary);
 }
 
 /* 公告栏 */
@@ -623,7 +659,7 @@ function switchTab(url) {
   display: flex; align-items: center; gap: 12rpx;
 }
 .notice-icon { font-size: 28rpx; }
-.notice-text { flex: 1; font-size: 26rpx; color: #F5895A; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notice-text { flex: 1; font-size: 26rpx; color: var(--theme-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .notice-more { font-size: 22rpx; color: #9E8E7E; }
 /* 公告弹窗 */
 .notice-modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); z-index: 999; display: flex; align-items: center; justify-content: center; }
@@ -634,7 +670,7 @@ function switchTab(url) {
 .notice-item-title { font-size: 28rpx; font-weight: 500; color: #2D2016; display: block; }
 .notice-item-content { font-size: 26rpx; color: #9E8E7E; display: block; margin: 8rpx 0; }
 .notice-item-time { font-size: 22rpx; color: #C4B8AD; }
-.notice-close { margin-top: 20rpx; text-align: center; padding: 16rpx; background: #F5895A; color: #fff; border-radius: 40rpx; font-size: 28rpx; }
+.notice-close { margin-top: 20rpx; text-align: center; padding: 16rpx; background: var(--theme-primary); color: #fff; border-radius: 40rpx; font-size: 28rpx; }
 
 .safe-bottom {
   height: env(safe-area-inset-bottom);

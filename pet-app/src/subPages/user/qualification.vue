@@ -1,7 +1,7 @@
 <template>
   <view class="page-qualification">
     <view class="section">
-      <text class="section-title">申请成为上门师傅</text>
+      <text class="section-title">申请成为宠护师</text>
       <text class="section-desc">提交资料后我们会在1-3个工作日内审核</text>
     </view>
     <view class="section">
@@ -70,5 +70,5 @@ async function handleSubmit() {
 .photo-row { display: flex; gap: 16rpx; }
 .photo { width: 160rpx; height: 160rpx; border-radius: 12rpx; background: #F5F0EA; }
 .add-photo { width: 160rpx; height: 160rpx; border: 2rpx dashed #F5F0EA; border-radius: 12rpx; display: flex; align-items: center; justify-content: center; font-size: 48rpx; color: #C4B8AD; }
-.submit-btn { margin: 40rpx 32rpx; background: #F5895A; color: #fff; text-align: center; padding: 24rpx; border-radius: 48rpx; font-size: 30rpx; font-weight: 600; }
+.submit-btn { margin: 40rpx 32rpx; background: var(--theme-primary); color: #fff; text-align: center; padding: 24rpx; border-radius: 48rpx; font-size: 30rpx; font-weight: 600; }
 </style>

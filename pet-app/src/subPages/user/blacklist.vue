@@ -3,7 +3,7 @@
     <view class="header"><text class="title">黑名单</text></view>
     <view v-if="list.length === 0"><c-empty-state text="黑名单为空" /></view>
     <view class="list-item" v-for="item in list" :key="item.id">
-      <image class="avatar" :src="item.blocked?.avatar || '/static/default-avatar.png'" mode="aspectFill" />
+      <c-avatar :src="item.blocked?.avatar" :name="item.blocked?.nickname" size="sm" />
       <view class="info">
         <text class="name">{{ item.blocked?.nickname || '未知用户' }}</text>
         <text class="reason" v-if="item.reason">原因：{{ item.reason }}</text>

@@ -51,4 +51,24 @@ router.get('/:id/stats', optionalAuth, (req, res, next) =>
   petController.getStats(req, res, next)
 );
 
+// 宠物服务记录
+router.get('/:id/orders', authMiddleware, async (req, res, next) => {
+  try {
+    const { default: prisma } = await import('../../config/database');
+    const petId = parseInt(req.params.id);
+    // petIds 是JSON数组，用 path 查询
+    const orders = await prisma.serviceOrder.findMany({
+      where: { petIds: { path: '$', array_contains: [petId] } },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      select: {
+        id: true, orderNo: true, serviceType: true, status: true,
+        price: true, scheduledDate: true, createdAt: true, completedAt: true,
+        provider: { select: { id: true, nickname: true, avatar: true, avgRating: true } },
+      },
+    });
+    res.json({ code: 0, data: orders });
+  } catch (err) { next(err); }
+});
+
 export default router;

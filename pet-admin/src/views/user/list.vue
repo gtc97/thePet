@@ -9,7 +9,7 @@
         <el-form-item label="身份">
           <el-select v-model="query.role" placeholder="全部" clearable>
             <el-option label="宠物主" value="PET_OWNER" />
-            <el-option label="上门师傅" value="SERVICE_PROVIDER" />
+            <el-option label="宠护师" value="SERVICE_PROVIDER" />
           </el-select>
         </el-form-item>
         <el-form-item label="状态">
@@ -32,15 +32,29 @@
       <el-table :data="users" border stripe style="width: 100%">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="nickname" label="昵称" width="120" />
-        <el-table-column prop="phone" label="手机号" width="130" />
+        <el-table-column label="手机号" width="130">
+          <template #default="{ row }">{{ $maskPhone(row.phone) }}</template>
+        </el-table-column>
         <el-table-column label="身份" width="150">
           <template #default="{ row }">
             <el-tag v-for="r in row.roles" :key="r" size="small" style="margin-right: 4px">
-              {{ r === 'PET_OWNER' ? '宠物主' : '上门师傅' }}
+              {{ r === 'PET_OWNER' ? '宠物主' : '宠护师' }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="qualificationStatus" label="资质状态" width="100" />
+        <el-table-column label="等级" width="70">
+          <template #default="{ row }">
+            <el-tag v-if="row.roles?.includes('SERVICE_PROVIDER')" type="warning" size="small">Lv.{{ row.level }}</el-tag>
+            <span v-else style="color:#C0C4CC">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="points" label="积分" width="70">
+          <template #default="{ row }">
+            <span v-if="row.roles?.includes('SERVICE_PROVIDER')">{{ row.points }}</span>
+            <span v-else style="color:#C0C4CC">-</span>
+          </template>
+        </el-table-column>
         <el-table-column label="操作" min-width="200">
           <template #default="{ row }">
             <el-button size="small" @click="$router.push(`/users/${row.id}`)">详情</el-button>

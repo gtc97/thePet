@@ -7,7 +7,7 @@
           <text class="item-title">手机号</text>
           <text class="item-desc">控制谁可以看到你的手机号</text>
         </view>
-        <picker :range="visibilityOptions" :value="phoneVisibility" @change="(e) => phoneVisibility = e.detail.value">
+        <picker :range="visibilityOptions" :value="phoneVisibility" @change="(e) => { phoneVisibility = e.detail.value; saveSettings(); }">
           <text class="picker-value">{{ visibilityOptions[phoneVisibility] }}</text>
         </picker>
       </view>
@@ -16,7 +16,7 @@
           <text class="item-title">地址</text>
           <text class="item-desc">控制谁可以看到你的地址</text>
         </view>
-        <picker :range="visibilityOptions" :value="addrVisibility" @change="(e) => addrVisibility = e.detail.value">
+        <picker :range="visibilityOptions" :value="addrVisibility" @change="(e) => { addrVisibility = e.detail.value; saveSettings(); }">
           <text class="picker-value">{{ visibilityOptions[addrVisibility] }}</text>
         </picker>
       </view>
@@ -28,7 +28,7 @@
           <text class="item-title">关闭私信</text>
           <text class="item-desc">开启后其他人无法给你发私信</text>
         </view>
-        <switch :checked="chatDisabled" @change="(e) => handleToggle(e.detail.value)" color="#F5895A" />
+        <switch :checked="chatDisabled" @change="(e) => handleToggle(e.detail.value)" color="var(--theme-primary)" />
       </view>
     </view>
     <view class="section">
@@ -48,9 +48,20 @@ import { useUserStore } from '@/store/user';
 
 const userStore = useUserStore();
 const visibilityOptions = ['仅自己可见', '订单关联用户可见'];
-const phoneVisibility = ref(1);
-const addrVisibility = ref(1);
+const settings = userStore.userInfo?.settings || {};
+const phoneVisibility = ref(settings.phoneVisibility ?? 1);
+const addrVisibility = ref(settings.addrVisibility ?? 1);
 const chatDisabled = ref(userStore.userInfo?.chatDisabled || false);
+
+// 保存隐私设置
+async function saveSettings() {
+  try {
+    const s = { ...settings, phoneVisibility: phoneVisibility.value, addrVisibility: addrVisibility.value };
+    await request({ url: '/users/me', method: 'PUT', data: { settings: s } });
+    // 更新本地store
+    if (userStore.userInfo) userStore.userInfo.settings = s;
+  } catch { /* ignore */ }
+}
 
 async function handleToggle(val) {
   chatDisabled.value = val;
@@ -74,6 +85,6 @@ function handleLogout() {
 .item-info { flex: 1; }
 .item-title { font-size: 28rpx; color: #2D2016; display: block; }
 .item-desc { font-size: 24rpx; color: #9E8E7E; margin-top: 4rpx; display: block; }
-.picker-value { font-size: 26rpx; color: #F5895A; }
+.picker-value { font-size: 26rpx; color: var(--theme-primary); }
 .arrow { color: #C4B8AD; font-size: 28rpx; }
 </style>

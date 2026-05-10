@@ -33,7 +33,9 @@ enum PrivacyLevel {
 enum OrderStatus {
   PENDING
   ACCEPTED
+  PAID
   IN_PROGRESS
+  WAITING_CONFIRM
   COMPLETED
   CANCELLED
   DISPUTE
@@ -89,6 +91,10 @@ model User {
   qualificationStatus String? @db.VarChar(20) // pending/approved/rejected
   qualificationData   Json?                    // 资质资料
   chatDisabled Boolean  @default(false)        // 关闭私信
+  points       Int       @default(0)           // 积分
+  level        Int       @default(0)           // 等级(0-5)
+  settings         Json?                           // 用户设置
+  providerServices Json?                           // 宠护师服务列表 [{name,price,desc}]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
@@ -267,6 +273,10 @@ model ServiceOrder {
   serviceEndAt   DateTime?
   serviceDuration Int?                                           // 服务时长(秒)
   completedAt   DateTime?
+  paymentStatus  String?    @default("UNPAID") @db.VarChar(20)   // UNPAID | PAID
+  paymentProof   String?    @db.VarChar(500)                     // 支付凭证截图
+  ownerConfirmedAt DateTime?                                     // 宠主确认时间
+  applicants     Json?                                           // 申请接单的师傅列表 [{providerId,nickname,avatar,appliedAt}]
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
@@ -522,6 +532,22 @@ model SystemConfig {
   updatedAt DateTime @updatedAt
 
   @@map("system_configs")
+}
+
+// ─── 预警与激励 ──────────────────────────────────────
+
+model WarningLog {
+  id        Int      @id @default(autoincrement())
+  type      String   @db.VarChar(30) // "abnormal_order"|"review_surge"|"complaint_surge"|"high_cancel_rate"
+  level     String   @db.VarChar(10) // "info"|"warn"|"alert"
+  title     String   @db.VarChar(200)
+  content   String   @db.Text
+  relatedId Int?                      // 关联用户/订单ID
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([type, createdAt(sort: Desc)])
+  @@map("warning_logs")
 }
 
 // ─── LIVE RESERVED ──────────────────────────────────────────

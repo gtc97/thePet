@@ -7,7 +7,7 @@ import { AppError } from '../../middleware/errorHandler';
 const router = Router();
 
 // 发起申诉
-router.post('/:orderId/disputes', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/:orderId(\\d+)/disputes', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const orderId = parseInt(req.params.orderId);
     const order = await prisma.serviceOrder.findUnique({ where: { id: orderId } });
@@ -50,8 +50,8 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response, next: 
   } catch (err) { next(err); }
 });
 
-// 申诉详情
-router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+// 申诉详情（仅匹配数字ID）
+router.get('/:id(\\d+)', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const dispute = await prisma.dispute.findUnique({ where: { id: parseInt(req.params.id) } });
     if (!dispute) throw new AppError(404, '申诉不存在');
@@ -60,7 +60,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response, next:
 });
 
 // 撤销申诉
-router.put('/:id/cancel', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.put('/:id(\\d+)/cancel', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const dispute = await prisma.dispute.findFirst({
       where: { id: parseInt(req.params.id), initiatorId: req.user!.userId },

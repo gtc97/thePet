@@ -3,6 +3,7 @@ import { authMiddleware } from '../../middleware/auth';
 import { AuthRequest, success } from '../../types';
 import prisma from '../../config/database';
 import { AppError } from '../../middleware/errorHandler';
+import { sendToRoom } from '../../config/socket';
 
 const router = Router();
 
@@ -112,6 +113,9 @@ router.post('/rooms/:roomId/messages', authMiddleware, async (req: AuthRequest, 
     });
 
     await prisma.chatRoom.update({ where: { id: roomId }, data: { updatedAt: new Date() } });
+
+    // WebSocket实时推送到聊天室对方
+    sendToRoom(roomId, msg);
 
     res.json(success(msg, '发送成功'));
   } catch (err) { next(err); }

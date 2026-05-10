@@ -73,11 +73,8 @@ const themeColor = computed(() => {
 function handleThemeChange(key) {
   currentTheme.value = key;
   uni.setStorageSync('theme', key);
-  // 切换主题后重启到首页使CSS变量生效
+  uni.$emit('themeChanged', key);
   uni.showToast({ title: `已切换为${themes.find(t=>t.key===key).name}`, icon: 'success' });
-  setTimeout(() => {
-    uni.reLaunch({ url: '/pages/index/index' });
-  }, 600);
 }
 
 async function handleToggle(type, value) {

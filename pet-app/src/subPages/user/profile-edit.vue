@@ -3,7 +3,7 @@
     <view class="section">
       <text class="section-title">头像</text>
       <view class="avatar-row" @tap="handleChooseAvatar">
-        <image class="avatar" :src="form.avatar || '/static/default-avatar.png'" mode="aspectFill" />
+        <c-avatar :src="form.avatar" :name="form.nickname" size="lg" />
         <text class="change-text">点击更换</text>
       </view>
     </view>
@@ -87,10 +87,10 @@ async function handleSave() {
 .section-title { font-size: 30rpx; font-weight: 600; color: #2D2016; margin-bottom: 20rpx; display: block; }
 .avatar-row { display: flex; align-items: center; gap: 20rpx; }
 .avatar { width: 120rpx; height: 120rpx; border-radius: 50%; background: #F5F0EA; }
-.change-text { font-size: 26rpx; color: #F5895A; }
+.change-text { font-size: 26rpx; color: var(--theme-primary); }
 .form-item { margin-bottom: 20rpx; }
 .label { font-size: 28rpx; color: #2D2016; display: block; margin-bottom: 10rpx; }
 .input { width: 100%; height: 80rpx; border: 2rpx solid #F5F0EA; border-radius: 12rpx; padding: 0 20rpx; font-size: 28rpx; box-sizing: border-box; background: #FBF8F4; }
 .textarea { width: 100%; height: 140rpx; border: 2rpx solid #F5F0EA; border-radius: 12rpx; padding: 16rpx 20rpx; font-size: 28rpx; box-sizing: border-box; background: #FBF8F4; }
-.submit-btn { margin: 40rpx 32rpx; background: #F5895A; color: #fff; text-align: center; padding: 24rpx; border-radius: 48rpx; font-size: 30rpx; font-weight: 600; }
+.submit-btn { margin: 40rpx 32rpx; background: var(--theme-primary); color: #fff; text-align: center; padding: 24rpx; border-radius: 48rpx; font-size: 30rpx; font-weight: 600; }
 </style>

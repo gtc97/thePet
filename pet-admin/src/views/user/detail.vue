@@ -5,7 +5,7 @@
       <el-descriptions title="基本信息" :column="2" border>
         <el-descriptions-item label="ID">{{ user.id }}</el-descriptions-item>
         <el-descriptions-item label="昵称">{{ user.nickname }}</el-descriptions-item>
-        <el-descriptions-item label="手机号">{{ user.phone || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="手机号">{{ $maskPhone(user.phone) }}</el-descriptions-item>
         <el-descriptions-item label="城市">{{ user.city || '-' }}</el-descriptions-item>
         <el-descriptions-item label="注册时间">{{ user.createdAt?.slice(0, 10) }}</el-descriptions-item>
         <el-descriptions-item label="账号状态">
@@ -13,7 +13,7 @@
         </el-descriptions-item>
         <el-descriptions-item label="身份">
           <el-tag v-for="r in (user.roles || [])" :key="r" size="small" style="margin-right:4px">
-            {{ r === 'PET_OWNER' ? '宠物主' : '上门师傅' }}
+            {{ r === 'PET_OWNER' ? '宠物主' : '宠护师' }}
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="资质状态">{{ user.qualificationStatus || '-' }}</el-descriptions-item>

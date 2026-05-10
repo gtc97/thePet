@@ -83,6 +83,29 @@ app.get('/api/v1/announcements', async (_req, res) => {
   } catch { res.json({ code: 0, data: [] }); }
 });
 
+// 师傅列表（公开）
+app.get('/api/v1/providers', async (req, res) => {
+  try {
+    const { default: prisma } = await import('./config/database');
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    const [list, total] = await Promise.all([
+      prisma.user.findMany({
+        where: { roles: { path: '$', array_contains: ['SERVICE_PROVIDER'] }, status: 'ACTIVE' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { avgRating: 'desc' },
+        select: {
+          id: true, nickname: true, avatar: true, bio: true, city: true,
+          avgRating: true, totalOrders: true, level: true, points: true,
+        },
+      }),
+      prisma.user.count({ where: { roles: { path: '$', array_contains: ['SERVICE_PROVIDER'] }, status: 'ACTIVE' } }),
+    ]);
+    res.json({ code: 0, data: { list, total, page, pageSize } });
+  } catch { res.json({ code: 0, data: { list: [], total: 0, page: 1, pageSize: 10 } }); }
+});
+
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -100,14 +123,15 @@ app.use('/api/v1/shares', shareRoutes);            // 分享
 app.use('/api/v1/favorites', favoriteRoutes);      // 收藏
 app.use('/api/v1/orders', orderRoutes);            // 订单
 app.use('/api/v1/deposits', depositRoutes);        // 押金
-app.use('/api/v1', reviewRoutes);                  // 评价（嵌套路由）
-app.use('/api/v1', disputeRoutes);                 // 申诉（嵌套路由）
+// 注意：review/dispute 路由包含 /:id 通配路径，放在最后避免拦截其他路由
 app.use('/api/v1/blacklist', blacklistRoutes);     // 黑名单
 app.use('/api/v1/chat', chatRoutes);               // 聊天
 app.use('/api/v1/notifications', notificationRoutes); // 通知
 app.use('/api/v1/admin', adminRoutes);              // 管理端
 app.use('/api/v1/map', mapRoutes);                  // 地图
 app.use('/api/v1/feedback', feedbackRoutes);         // 反馈
+app.use('/api/v1', reviewRoutes);                  // 评价（含 /:id 通配，需在最后）
+app.use('/api/v1', disputeRoutes);                 // 申诉（含 /:id 通配，需在最后）
 
 // 服务类型（公开接口）
 app.get('/api/v1/services', async (_req, res) => {

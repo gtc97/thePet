@@ -89,7 +89,7 @@
         <el-divider>宠主信息</el-divider>
         <el-descriptions :column="2" border>
           <el-descriptions-item label="昵称">{{ detail.owner?.nickname }}</el-descriptions-item>
-          <el-descriptions-item label="手机号">{{ detail.owner?.phone }}</el-descriptions-item>
+          <el-descriptions-item label="手机号">{{ $maskPhone(detail.owner?.phone) }}</el-descriptions-item>
         </el-descriptions>
 
         <el-divider>内容概览</el-divider>

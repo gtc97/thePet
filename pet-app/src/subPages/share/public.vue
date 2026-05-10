@@ -11,7 +11,7 @@
 
     <!-- 宠主信息 -->
     <view class="owner-bar">
-      <image class="owner-avatar" :src="share.user.avatar || '/static/default-avatar.png'" mode="aspectFill" />
+      <c-avatar :src="share.user.avatar" :name="share.user.nickname" size="sm" />
       <text class="owner-name">{{ share.user.nickname }}</text>
     </view>
 

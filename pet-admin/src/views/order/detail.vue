@@ -13,20 +13,29 @@
           <el-descriptions-item label="预约日期">{{ order.scheduledDate?.slice(0, 10) }}</el-descriptions-item>
           <el-descriptions-item label="时间段">{{ order.timeSlot }}</el-descriptions-item>
           <el-descriptions-item label="服务地址">{{ order.address }}</el-descriptions-item>
+          <el-descriptions-item label="支付状态">
+            <el-tag :type="order.paymentStatus === 'PAID' ? 'success' : 'info'">
+              {{ order.paymentStatus === 'PAID' ? '已付款' : '未付款' }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item v-if="order.paymentProof" label="支付凭证">
+            <el-image :src="order.paymentProof" style="width:100px;height:100px" fit="cover" :preview-src-list="[order.paymentProof]" />
+          </el-descriptions-item>
+          <el-descriptions-item label="宠主确认">{{ order.ownerConfirmedAt?.slice(0,19) || '-' }}</el-descriptions-item>
           <el-descriptions-item label="创建时间">{{ order.createdAt?.slice(0, 10) }}</el-descriptions-item>
         </el-descriptions>
 
         <el-divider>宠主信息</el-divider>
         <el-descriptions :column="2" border>
           <el-descriptions-item label="昵称">{{ order.owner?.nickname }}</el-descriptions-item>
-          <el-descriptions-item label="手机号">{{ order.owner?.phone }}</el-descriptions-item>
+          <el-descriptions-item label="手机号">{{ $maskPhone(order.owner?.phone) }}</el-descriptions-item>
         </el-descriptions>
 
         <template v-if="order.provider">
-          <el-divider>师傅信息</el-divider>
+          <el-divider>宠护师信息</el-divider>
           <el-descriptions :column="2" border>
             <el-descriptions-item label="昵称">{{ order.provider.nickname }}</el-descriptions-item>
-            <el-descriptions-item label="手机号">{{ order.provider.phone }}</el-descriptions-item>
+            <el-descriptions-item label="手机号">{{ $maskPhone(order.provider.phone) }}</el-descriptions-item>
           </el-descriptions>
         </template>
 
@@ -62,7 +71,7 @@ const order = ref<any>({});
 const loading = ref(false);
 
 const statusMap: Record<string, string> = {
-  PENDING: 'warning', ACCEPTED: 'primary', IN_PROGRESS: '', COMPLETED: 'success', CANCELLED: 'danger', DISPUTE: 'danger',
+  PENDING: 'warning', ACCEPTED: 'primary', PAID: 'success', IN_PROGRESS: '', WAITING_CONFIRM: 'warning', COMPLETED: 'success', CANCELLED: 'danger', DISPUTE: 'danger',
 };
 function statusTag(s: string) { return statusMap[s] || 'info'; }
 

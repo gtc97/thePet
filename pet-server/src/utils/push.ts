@@ -31,7 +31,7 @@ export async function pushOrderUpdate(
 ): Promise<void> {
   // 推送给宠主
   await sendPush(ownerId, 'ORDER', title, content, orderId);
-  // 推送给师傅（如果有）
+  // 推送给宠护师
   if (providerId) {
     await sendPush(providerId, 'ORDER', title, content, orderId);
   }

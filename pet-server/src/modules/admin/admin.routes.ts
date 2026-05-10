@@ -1,5 +1,7 @@
 import { Router, Response, NextFunction } from 'express';
 import { adminService } from './admin.service';
+import { warningService } from './warning.service';
+import { milestoneService } from './milestone.service';
 import { adminAuth } from '../../middleware/adminAuth';
 import { AuthRequest, success } from '../../types';
 import prisma from '../../config/database';
@@ -92,6 +94,7 @@ router.get('/orders', async (req: AuthRequest, res: Response, next: NextFunction
     const data = await adminService.listOrders({
       status: req.query.status as string,
       orderNo: req.query.orderNo as string,
+      phone: req.query.phone as string,
       page: parseInt(req.query.page as string) || 1,
       pageSize: parseInt(req.query.pageSize as string) || 20,
     });
@@ -278,6 +281,55 @@ router.get('/live-rooms', async (_req, res, next) => {
   try {
     const rooms = await prisma.liveRoom.findMany({ orderBy: { createdAt: 'desc' }, take: 20 });
     res.json(success(rooms));
+  } catch (err) { next(err); }
+});
+
+// ─── 预警管理 ───
+router.get('/warnings', async (req, res, next) => {
+  try {
+    const data = await warningService.listWarnings(
+      parseInt(req.query.page as string) || 1,
+      parseInt(req.query.pageSize as string) || 20,
+    );
+    res.json(success(data));
+  } catch (err) { next(err); }
+});
+
+router.post('/warnings/check', async (_req, res, next) => {
+  try {
+    const data = await warningService.checkAbnormalOrders();
+    res.json(success(data, '检测完成'));
+  } catch (err) { next(err); }
+});
+
+router.put('/warnings/:id/handle', async (req, res, next) => {
+  try {
+    await warningService.markHandled(parseInt(req.params.id));
+    res.json(success(null, '已标记处理'));
+  } catch (err) { next(err); }
+});
+
+// ─── 里程碑检测 ───
+router.post('/milestones/check', async (_req, res, next) => {
+  try {
+    const data = await milestoneService.runAll();
+    res.json(success(data, '里程碑检测完成'));
+  } catch (err) { next(err); }
+});
+
+// ─── 激励：重算所有宠护师等级 ───
+router.post('/providers/recalc-levels', async (_req, res, next) => {
+  try {
+    const providers = await prisma.user.findMany({
+      where: { roles: { path: '$', array_contains: ['SERVICE_PROVIDER'] } },
+      select: { id: true, points: true },
+    });
+    for (const p of providers) {
+      const total = p.points || 0;
+      const level = total >= 500 ? 5 : total >= 200 ? 4 : total >= 100 ? 3 : total >= 50 ? 2 : total >= 10 ? 1 : 0;
+      await prisma.user.update({ where: { id: p.id }, data: { level } });
+    }
+    res.json(success({ count: providers.length }, `${providers.length}位宠护师等级已更新`));
   } catch (err) { next(err); }
 });
 

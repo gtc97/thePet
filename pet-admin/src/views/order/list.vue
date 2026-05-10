@@ -3,7 +3,13 @@
     <h3>订单管理</h3>
     <el-card>
       <el-form :inline="true">
-        <el-form-item label="订单状态">
+        <el-form-item label="订单号">
+          <el-input v-model="query.orderNo" placeholder="搜索订单号" clearable style="width:180px" />
+        </el-form-item>
+        <el-form-item label="手机号">
+          <el-input v-model="query.phone" placeholder="宠主/宠护师手机号" clearable style="width:160px" />
+        </el-form-item>
+        <el-form-item label="状态">
           <el-select v-model="query.status" placeholder="全部" clearable @change="fetchOrders">
             <el-option label="待接单" value="PENDING" />
             <el-option label="已接单" value="ACCEPTED" />
@@ -22,7 +28,7 @@
         <el-table-column label="宠主" width="100">
           <template #default="{ row }">{{ row.owner?.nickname || '-' }}</template>
         </el-table-column>
-        <el-table-column label="师傅" width="100">
+        <el-table-column label="宠护师" width="100">
           <template #default="{ row }">{{ row.provider?.nickname || '-' }}</template>
         </el-table-column>
         <el-table-column label="状态" width="100">
@@ -51,7 +57,7 @@ import api from '@/api';
 const orders = ref([]);
 const total = ref(0);
 const loading = ref(false);
-const query = reactive({ status: '', orderNo: '', page: 1, pageSize: 20 });
+const query = reactive({ status: '', orderNo: '', phone: '', page: 1, pageSize: 20 });
 
 const statusLabel = (s: string) => ({ PENDING:'待接单', ACCEPTED:'已接单', IN_PROGRESS:'服务中', COMPLETED:'已完成', CANCELLED:'已取消', DISPUTE:'申诉中' }[s] || s);
 

@@ -8,5 +8,12 @@ import router from './router';
 const app = createApp(App);
 app.use(createPinia());
 app.use(router);
-app.use(ElementPlus, { locale: undefined }); // 默认中文
+app.use(ElementPlus, { locale: undefined });
+
+// 全局方法：手机号脱敏
+app.config.globalProperties.$maskPhone = (phone: string) => {
+  if (!phone || phone.length < 7) return phone || '-';
+  return phone.slice(0, 3) + '****' + phone.slice(-4);
+};
+
 app.mount('#app');

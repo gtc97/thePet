@@ -1,7 +1,7 @@
 <template>
   <view class="page-album-list">
     <view class="pet-header" v-if="petInfo">
-      <image class="pet-avatar" :src="petInfo.avatar || '/static/default-pet.png'" mode="aspectFill" />
+      <c-avatar :src="petInfo.avatar" :name="petInfo.name" size="sm" />
       <text class="pet-name">{{ petInfo.name }}</text>
       <text class="photo-count">{{ photos.length }}张</text>
     </view>
@@ -69,9 +69,11 @@ function handleUpload() {
     sizeType: ['compressed'],
     sourceType: ['album', 'camera'],
     success: async (res) => {
-      uni.showLoading({ title: '上传中...' });
+      uni.showLoading({ title: '上传中 0/' + res.tempFilePaths.length });
       const uploaded = [];
-      for (const fp of res.tempFilePaths) {
+      for (let i = 0; i < res.tempFilePaths.length; i++) {
+        const fp = res.tempFilePaths[i];
+        uni.showLoading({ title: `上传中 ${i + 1}/${res.tempFilePaths.length}` });
         const r = await new Promise((resolve, reject) => {
           uni.uploadFile({
             url: BASE_URL + '/upload/image',

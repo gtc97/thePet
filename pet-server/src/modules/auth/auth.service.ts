@@ -111,9 +111,14 @@ export class AuthService {
 
   // 微信手机号登录：code登录 + 手机号绑定
   async wechatLoginWithPhone(code: string, encryptedData: string, iv: string) {
+    // 检查微信配置
+    if (!config.wechat.appId || !config.wechat.appSecret) {
+      throw new AppError(400, '微信登录未配置，请使用验证码登录');
+    }
+
     const { session_key } = await this.getWechatSession(code);
 
-    // 解密手机号（需要WXBizDataCrypt）
+    // 解密手机号
     let phone = '';
     try {
       phone = this.decryptPhone(encryptedData, iv, session_key, config.wechat.appId);

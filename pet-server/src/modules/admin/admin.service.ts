@@ -49,19 +49,36 @@ export class AdminService {
 
   // 仪表盘数据
   async getDashboard() {
-    const [userCount, petCount, orderCount, pendingDisputes, pendingQualifications, pendingFeedbacks] =
-      await Promise.all([
-        prisma.user.count(),
-        prisma.pet.count(),
-        prisma.serviceOrder.count(),
-        prisma.dispute.count({ where: { status: { in: ['PENDING', 'REVIEWING'] } } }),
-        prisma.user.count({ where: { qualificationStatus: 'pending' } }),
-        prisma.feedback.count({ where: { status: 'pending' } }),
-      ]);
+    const [
+      userCount, petCount, orderCount,
+      pendingDisputes, pendingQualifications, pendingFeedbacks,
+      paidOrders, completedToday, providerCount,
+      recentOrders, topProviders,
+    ] = await Promise.all([
+      prisma.user.count(),
+      prisma.pet.count(),
+      prisma.serviceOrder.count(),
+      prisma.dispute.count({ where: { status: { in: ['PENDING', 'REVIEWING'] } } }),
+      prisma.user.count({ where: { qualificationStatus: 'pending' } }),
+      prisma.feedback.count({ where: { status: 'pending' } }),
+      prisma.serviceOrder.count({ where: { paymentStatus: 'PAID', status: { not: 'CANCELLED' } } }),
+      prisma.serviceOrder.count({ where: { status: 'COMPLETED', updatedAt: { gte: new Date(new Date().setHours(0,0,0,0)) } } }),
+      prisma.user.count({ where: { roles: { path: '$', array_contains: ['SERVICE_PROVIDER'] } } }),
+      prisma.serviceOrder.findMany({ take: 5, orderBy: { createdAt: 'desc' },
+        include: { owner: { select: { nickname: true } }, provider: { select: { nickname: true } } },
+      }),
+      prisma.user.findMany({
+        where: { roles: { path: '$', array_contains: ['SERVICE_PROVIDER'] } },
+        orderBy: { avgRating: 'desc' }, take: 5,
+        select: { id: true, nickname: true, avatar: true, avgRating: true, totalOrders: true, level: true },
+      }),
+    ]);
 
     return {
       userCount, petCount, orderCount,
       pendingDisputes, pendingQualifications, pendingFeedbacks,
+      paidOrders, completedToday, providerCount,
+      recentOrders, topProviders,
     };
   }
 
@@ -86,7 +103,8 @@ export class AdminService {
         select: {
           id: true, nickname: true, phone: true, avatar: true,
           roles: true, status: true, qualificationStatus: true,
-          city: true, createdAt: true,
+          city: true, points: true, level: true, avgRating: true, totalOrders: true,
+          createdAt: true,
           _count: { select: { pets: true } },
         },
       }),
@@ -130,7 +148,7 @@ export class AdminService {
 
     // 推送通知
     await prisma.pushLog.create({
-      data: { userId, type: 'QUALIFICATION', title: '资质审核通过', content: '您的上门师傅资质已通过审核，现在可以切换身份接单了' },
+      data: { userId, type: 'QUALIFICATION', title: '资质审核通过', content: '您的宠护师资质已通过审核，现在可以切换身份接单了' },
     });
   }
 
@@ -150,10 +168,16 @@ export class AdminService {
   }
 
   // 全量订单查询
-  async listOrders(params: { status?: string; orderNo?: string; page?: number; pageSize?: number }) {
+  async listOrders(params: { status?: string; orderNo?: string; phone?: string; page?: number; pageSize?: number }) {
     const where: Record<string, unknown> = {};
     if (params.status) where.status = params.status;
     if (params.orderNo) where.orderNo = { contains: params.orderNo };
+    if (params.phone) {
+      where.OR = [
+        { owner: { phone: { contains: params.phone } } },
+        { provider: { phone: { contains: params.phone } } },
+      ];
+    }
 
     const page = params.page || 1;
     const pageSize = params.pageSize || 20;

@@ -48,8 +48,8 @@ async function handleSubmit() {
 .section-title { font-size: 30rpx; font-weight: 600; color: #2D2016; display: block; margin-bottom: 16rpx; }
 .type-row { display: flex; gap: 16rpx; flex-wrap: wrap; }
 .type-item { padding: 12rpx 24rpx; border: 2rpx solid #F5F0EA; border-radius: 24rpx; font-size: 26rpx; color: #9E8E7E; }
-.type-item.active { border-color: #F5895A; color: #F5895A; background: #FFF3E8; }
+.type-item.active { border-color: var(--theme-primary); color: var(--theme-primary); background: #FFF3E8; }
 .textarea { width: 100%; height: 200rpx; border: 2rpx solid #F5F0EA; border-radius: 12rpx; padding: 16rpx; font-size: 28rpx; box-sizing: border-box; background: #FBF8F4; }
 .input { width: 100%; height: 80rpx; border: 2rpx solid #F5F0EA; border-radius: 12rpx; padding: 0 20rpx; font-size: 28rpx; box-sizing: border-box; background: #FBF8F4; }
-.submit-btn { margin: 40rpx 32rpx; background: #F5895A; color: #fff; text-align: center; padding: 24rpx; border-radius: 48rpx; font-size: 30rpx; font-weight: 600; }
+.submit-btn { margin: 40rpx 32rpx; background: var(--theme-primary); color: #fff; text-align: center; padding: 24rpx; border-radius: 48rpx; font-size: 30rpx; font-weight: 600; }
 </style>

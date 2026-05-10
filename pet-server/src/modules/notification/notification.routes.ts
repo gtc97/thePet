@@ -33,18 +33,7 @@ router.get('/unread-count', authMiddleware, async (req: AuthRequest, res: Respon
   } catch (err) { next(err); }
 });
 
-// 标记已读
-router.put('/:id/read', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    await prisma.pushLog.update({
-      where: { id: parseInt(req.params.id) },
-      data: { isRead: true, readAt: new Date() },
-    });
-    res.json(success(null, '已标记'));
-  } catch (err) { next(err); }
-});
-
-// 全部已读
+// 全部已读（必须在 /:id/read 之前注册，避免被 :id 拦截）
 router.put('/read-all', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     await prisma.pushLog.updateMany({
@@ -52,6 +41,19 @@ router.put('/read-all', authMiddleware, async (req: AuthRequest, res: Response, 
       data: { isRead: true, readAt: new Date() },
     });
     res.json(success(null, '已全部标记'));
+  } catch (err) { next(err); }
+});
+
+// 标记已读
+router.put('/:id/read', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const pushId = parseInt(req.params.id);
+    if (isNaN(pushId)) return res.json(success(null, '已标记'));
+    await prisma.pushLog.update({
+      where: { id: pushId },
+      data: { isRead: true, readAt: new Date() },
+    });
+    res.json(success(null, '已标记'));
   } catch (err) { next(err); }
 });
 

@@ -26,7 +26,7 @@
     <scroll-view class="pet-list" scroll-y>
       <view class="pet-card" v-for="pet in filteredPets" :key="pet.id" @tap="navigateTo('/subPages/pet/detail?id=' + pet.id)">
         <view class="pet-avatar-wrapper" :class="pet.gender === 'MALE' ? 'male' : 'female'">
-          <image class="pet-avatar" :src="pet.avatar || '/static/default-pet.png'" mode="aspectFill" />
+          <c-avatar :src="pet.avatar" :name="pet.name" size="sm" />
         </view>
         <view class="pet-info">
           <view class="pet-header">
@@ -121,7 +121,7 @@ function navigateTo(url) {
   width: 80rpx;
   height: 80rpx;
   border-radius: 50%;
-  background: #F5895A;
+  background: var(--theme-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -157,7 +157,7 @@ function navigateTo(url) {
   left: 0;
   right: 0;
   height: 6rpx;
-  background: #F5895A;
+  background: var(--theme-primary);
   border-radius: 3rpx;
 }
 
@@ -227,7 +227,7 @@ function navigateTo(url) {
 
   &.male {
     background: rgba(245, 137, 90, 0.13);
-    color: #F5895A;
+    color: var(--theme-primary);
   }
 
   &.female {

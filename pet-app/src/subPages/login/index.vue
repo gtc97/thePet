@@ -51,7 +51,8 @@
         <view class="divider-line" />
       </view>
 
-      <!-- 微信手机号快捷登录 -->
+      <!-- 微信手机号快捷登录（仅微信小程序环境可用） -->
+      <!-- #ifdef MP-WEIXIN -->
       <button
         class="wechat-btn"
         open-type="getPhoneNumber"
@@ -60,6 +61,13 @@
         <text class="wechat-icon">💬</text>
         <text>微信手机号快捷登录</text>
       </button>
+      <!-- #endif -->
+      <!-- #ifndef MP-WEIXIN -->
+      <view class="wechat-btn disabled">
+        <text class="wechat-icon">💬</text>
+        <text style="color:#9E8E7E">微信登录（需在微信小程序中使用）</text>
+      </view>
+      <!-- #endif -->
 
       <!-- 协议 -->
       <view class="agreement">
@@ -130,9 +138,18 @@ async function handleLogin() {
 function handleGetPhoneNumber(e) {
   // #ifdef MP-WEIXIN
   if (e.detail.errMsg !== 'getPhoneNumber:ok') {
+    if (e.detail.errMsg?.includes('deny')) {
+      uni.showToast({ title: '已取消授权', icon: 'none' });
+    }
     return;
   }
   uni.showLoading({ title: '登录中...', mask: true });
+  // 设置超时
+  const timeout = setTimeout(() => {
+    uni.hideLoading();
+    uni.showToast({ title: '网络超时，请重试', icon: 'none' });
+  }, 15000);
+
   uni.login({
     provider: 'weixin',
     success: async (loginRes) => {
@@ -142,17 +159,20 @@ function handleGetPhoneNumber(e) {
           e.detail.encryptedData,
           e.detail.iv
         );
+        clearTimeout(timeout);
         uni.hideLoading();
         uni.showToast({ title: '登录成功', icon: 'success' });
         setTimeout(() => uni.switchTab({ url: '/pages/index/index' }), 500);
       } catch (err) {
+        clearTimeout(timeout);
         uni.hideLoading();
-        uni.showToast({ title: err.message || '登录失败', icon: 'none' });
+        uni.showToast({ title: err.message || '登录失败，请使用验证码登录', icon: 'none' });
       }
     },
-    fail: () => {
+    fail: (loginErr) => {
+      clearTimeout(timeout);
       uni.hideLoading();
-      uni.showToast({ title: '微信登录失败', icon: 'none' });
+      uni.showToast({ title: loginErr.errMsg || '微信登录失败', icon: 'none' });
     },
   });
   // #endif
@@ -177,12 +197,12 @@ function handleGetPhoneNumber(e) {
 .code-btn {
   width: 220rpx; height: 88rpx; background: #FFF3E8; border-radius: 16rpx;
   display: flex; align-items: center; justify-content: center;
-  font-size: 26rpx; color: #F5895A; font-weight: 500;
+  font-size: 26rpx; color: var(--theme-primary); font-weight: 500;
 }
 .code-btn.disabled { background: #F5F0EA; color: #C4B8AD; }
 .code-tip { font-size: 22rpx; color: #67C23A; margin-top: 8rpx; display: block; }
 .login-btn {
-  width: 100%; height: 96rpx; background: #F5895A; border-radius: 48rpx;
+  width: 100%; height: 96rpx; background: var(--theme-primary); border-radius: 48rpx;
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-size: 32rpx; font-weight: 600; margin-top: 32rpx; margin-bottom: 32rpx;
 }
@@ -197,5 +217,5 @@ function handleGetPhoneNumber(e) {
 .wechat-btn::after { border: none; }
 .wechat-icon { font-size: 36rpx; }
 .agreement { text-align: center; font-size: 22rpx; color: #9E8E7E; margin-top: 60rpx; }
-.agreement .link { color: #F5895A; }
+.agreement .link { color: var(--theme-primary); }
 </style>

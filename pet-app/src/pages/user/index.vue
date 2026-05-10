@@ -12,7 +12,7 @@
           <text class="sub-title">{{ userStore.userInfo?.bio || '陪伴宠物健康成长' }}</text>
           <view class="role-tags">
             <text class="role-tag" v-for="r in userStore.userInfo?.roles || []" :key="r">
-              {{ r === 'PET_OWNER' ? '宠物主' : '师傅' }}
+              {{ r === 'PET_OWNER' ? '宠物主' : '宠护师' }}
             </text>
           </view>
         </view>
@@ -27,68 +27,100 @@
       </template>
     </view>
 
-    <!-- 身份切换 -->
+    <!-- 身份切换（双身份时显示） -->
     <view class="identity-switch" v-if="userStore.isLoggedIn && userStore.userInfo?.roles?.length > 1">
-      <view class="switch-tab" :class="{ active: userStore.currentRole === 'PET_OWNER' }" @tap="handleSwitchRole('PET_OWNER')">宠物主</view>
-      <view class="switch-tab" :class="{ active: userStore.currentRole === 'SERVICE_PROVIDER' }" @tap="handleSwitchRole('SERVICE_PROVIDER')">上门师傅</view>
+      <view class="switch-tab" :class="{ active: userStore.currentRole === 'PET_OWNER' }" @tap="handleSwitchRole('PET_OWNER')">
+        <text>🐱 宠物主模式</text>
+      </view>
+      <view class="switch-tab" :class="{ active: userStore.currentRole === 'SERVICE_PROVIDER' }" @tap="handleSwitchRole('SERVICE_PROVIDER')">
+        <text>🔧 宠护师模式</text>
+      </view>
     </view>
 
-    <!-- 数据统计卡片 -->
+    <!-- 当前身份标识 -->
+    <view class="role-banner" v-if="userStore.isLoggedIn">
+      <text class="role-banner-text">
+        {{ userStore.currentRole === 'SERVICE_PROVIDER' ? '🔧 当前为宠护师模式 — 底部「接单」查看订单' : '🐱 当前为宠主模式 — 底部「服务」管理订单' }}
+      </text>
+    </view>
+
+    <!-- 数据统计（角色差异化） -->
     <view class="stats-card" v-if="userStore.isLoggedIn">
-      <view class="stat-item">
-        <text class="stat-value">{{ stats.petCount }}</text>
-        <text class="stat-label">宠物</text>
-      </view>
-      <view class="stat-divider" />
-      <view class="stat-item">
-        <text class="stat-value">{{ stats.diaryCount }}</text>
-        <text class="stat-label">日记</text>
-      </view>
-      <view class="stat-divider" />
-      <view class="stat-item">
-        <text class="stat-value">{{ stats.photoCount }}</text>
-        <text class="stat-label">照片</text>
-      </view>
-      <view class="stat-divider" />
-      <view class="stat-item">
-        <text class="stat-value">{{ stats.orderCount }}</text>
-        <text class="stat-label">服务</text>
-      </view>
+      <template v-if="userStore.currentRole === 'SERVICE_PROVIDER'">
+        <view class="stat-item">
+          <text class="stat-value">{{ userStore.userInfo?.totalOrders || 0 }}</text>
+          <text class="stat-label">接单数</text>
+        </view>
+        <view class="stat-divider" />
+        <view class="stat-item">
+          <text class="stat-value">{{ userStore.userInfo?.avgRating?.toFixed(1) || '新手上路' }}</text>
+          <text class="stat-label">评分</text>
+        </view>
+        <view class="stat-divider" />
+        <view class="stat-item">
+          <text class="stat-value">{{ userStore.userInfo?.points || 0 }}</text>
+          <text class="stat-label">积分</text>
+        </view>
+        <view class="stat-divider" />
+        <view class="stat-item">
+          <text class="stat-value">Lv.{{ userStore.userInfo?.level || 0 }}</text>
+          <text class="stat-label">等级</text>
+        </view>
+      </template>
+      <template v-else>
+        <view class="stat-item">
+          <text class="stat-value">{{ stats.petCount }}</text>
+          <text class="stat-label">宠物</text>
+        </view>
+        <view class="stat-divider" />
+        <view class="stat-item">
+          <text class="stat-value">{{ stats.diaryCount }}</text>
+          <text class="stat-label">日记</text>
+        </view>
+        <view class="stat-divider" />
+        <view class="stat-item">
+          <text class="stat-value">{{ stats.photoCount }}</text>
+          <text class="stat-label">照片</text>
+        </view>
+        <view class="stat-divider" />
+        <view class="stat-item">
+          <text class="stat-value">{{ stats.orderCount }}</text>
+          <text class="stat-label">服务</text>
+        </view>
+      </template>
     </view>
 
-    <!-- 功能菜单 -->
+    <!-- 功能菜单（根据角色区分） -->
     <view class="menu-section">
-      <text class="section-title">功能</text>
+      <text class="section-title">{{ userStore.currentRole === 'SERVICE_PROVIDER' ? '宠护师功能' : '常用功能' }}</text>
       <view class="menu-card">
-        <view class="menu-item" @tap="navigateTo('/subPages/pet/list')">
-          <text class="menu-icon">🐾</text>
-          <text class="menu-text">我的宠物</text>
-          <text class="menu-arrow">→</text>
-        </view>
-        <view class="menu-item" @tap="navigateTo('/subPages/user/deposit')">
-          <text class="menu-icon">💰</text>
-          <text class="menu-text">押金中心</text>
-          <text class="menu-arrow">→</text>
-        </view>
-        <view class="menu-item" @tap="navigateTo('/subPages/user/favorites')">
-          <text class="menu-icon">⭐</text>
-          <text class="menu-text">我的收藏</text>
-          <text class="menu-arrow">→</text>
-        </view>
+        <!-- 宠主菜单 -->
+        <template v-if="userStore.currentRole === 'PET_OWNER'">
+          <view class="menu-item" @tap="navigateTo('/subPages/pet/list')">
+            <text class="menu-icon">🐾</text><text class="menu-text">我的宠物</text><text class="menu-arrow">→</text>
+          </view>
+          <view class="menu-item" @tap="navigateTo('/subPages/user/favorites')">
+            <text class="menu-icon">⭐</text><text class="menu-text">我的收藏</text><text class="menu-arrow">→</text>
+          </view>
+          <view class="menu-item" @tap="navigateTo('/subPages/user/locations')">
+            <text class="menu-icon">📍</text><text class="menu-text">服务地址</text><text class="menu-arrow">→</text>
+          </view>
+        </template>
+        <!-- 宠护师菜单 -->
+        <template v-if="userStore.currentRole === 'SERVICE_PROVIDER'">
+          <view class="menu-item" @tap="navigateTo('/subPages/user/provider-profile?id=' + userStore.userInfo?.id)">
+            <text class="menu-icon">👤</text><text class="menu-text">我的主页</text><text class="menu-arrow">→</text>
+          </view>
+          <view class="menu-item" @tap="navigateTo('/subPages/user/locations')">
+            <text class="menu-icon">📍</text><text class="menu-text">服务地址</text><text class="menu-arrow">→</text>
+          </view>
+          <view class="menu-item" @tap="navigateTo('/subPages/user/reviews')">
+            <text class="menu-icon">⭐</text><text class="menu-text">收到的评价</text><text class="menu-arrow">→</text>
+          </view>
+        </template>
+        <!-- 公共菜单 -->
         <view class="menu-item" @tap="navigateTo('/subPages/user/blacklist')">
-          <text class="menu-icon">🚫</text>
-          <text class="menu-text">黑名单</text>
-          <text class="menu-arrow">→</text>
-        </view>
-        <view class="menu-item" @tap="navigateTo('/subPages/user/locations')">
-          <text class="menu-icon">📍</text>
-          <text class="menu-text">服务地址</text>
-          <text class="menu-arrow">→</text>
-        </view>
-        <view class="menu-item" @tap="navigateTo('/subPages/user/reviews')">
-          <text class="menu-icon">⭐</text>
-          <text class="menu-text">我的评价</text>
-          <text class="menu-arrow">→</text>
+          <text class="menu-icon">🚫</text><text class="menu-text">黑名单</text><text class="menu-arrow">→</text>
         </view>
       </view>
     </view>
@@ -121,7 +153,7 @@
       <view class="menu-card">
         <view class="menu-item" @tap="navigateTo('/subPages/user/qualification')">
           <text class="menu-icon">📋</text>
-          <text class="menu-text">申请成为上门师傅</text>
+          <text class="menu-text">申请成为宠护师</text>
           <text class="menu-status">{{ userStore.userInfo?.qualificationStatus === 'pending' ? '审核中...' : '去申请 →' }}</text>
         </view>
       </view>
@@ -182,6 +214,8 @@ async function handleSwitchRole(role) {
   try {
     await userStore.switchRole(role);
     uni.showToast({ title: '身份切换成功', icon: 'success' });
+    // 自动跳转到对应Tab
+    setTimeout(() => uni.switchTab({ url: '/pages/order/list' }), 600);
   } catch (e) {
     uni.showToast({ title: e.message || '切换失败', icon: 'none' });
   }
@@ -205,7 +239,7 @@ function handleLogout() {
   padding-bottom: 180rpx;
 }
 .user-header {
-  background: linear-gradient(135deg, #F5895A 0%, #F7C96E 100%);
+  background: linear-gradient(135deg, var(--theme-primary) 0%, #F7C96E 100%);
   padding: 60rpx 32rpx 40rpx;
   display: flex;
   align-items: center;
@@ -240,8 +274,10 @@ function handleLogout() {
 .switch-tab {
   flex: 1; text-align: center; padding: 24rpx;
   font-size: 28rpx; color: #9E8E7E;
-  &.active { color: #F5895A; font-weight: 600; background: #FFF3E8; }
+  &.active { color: var(--theme-primary); font-weight: 600; background: #FFF3E8; }
 }
+.role-banner { margin: 0 32rpx 16rpx; padding: 16rpx 20rpx; background: #FFF8E8; border-radius: 12rpx; text-align: center; }
+.role-banner-text { font-size: 24rpx; color: #E6A23C; }
 
 .stats-card {
   display: flex; justify-content: space-around; align-items: center;
@@ -261,7 +297,7 @@ function handleLogout() {
 .menu-icon { font-size: 36rpx; margin-right: 16rpx; width: 48rpx; text-align: center; }
 .menu-text { flex: 1; font-size: 28rpx; color: #2D2016; }
 .menu-arrow { font-size: 24rpx; color: #C4B8AD; }
-.menu-status { font-size: 24rpx; color: #F5895A; }
+.menu-status { font-size: 24rpx; color: var(--theme-primary); }
 
 .logout-btn {
   margin: 32rpx; text-align: center; padding: 24rpx;

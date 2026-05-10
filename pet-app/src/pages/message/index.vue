@@ -279,7 +279,7 @@ function formatTime(dateStr) {
   margin-top: 24rpx;
   text-align: center;
   padding: 16rpx;
-  background: #F5895A;
+  background: var(--theme-primary);
   color: #fff;
   border-radius: 40rpx;
   font-size: 28rpx;

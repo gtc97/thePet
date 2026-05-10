@@ -46,6 +46,16 @@ export function completeService(id, data) {
   return request({ url: `/orders/${id}/complete`, method: 'POST', data });
 }
 
+// 确认付款（宠主）
+export function payOrder(id, paymentProof) {
+  return request({ url: `/orders/${id}/pay`, method: 'POST', data: { paymentProof } });
+}
+
+// 确认验收（宠主）
+export function confirmOrder(id) {
+  return request({ url: `/orders/${id}/confirm`, method: 'POST' });
+}
+
 // 取消订单
 export function cancelOrder(id, reason) {
   return request({ url: `/orders/${id}/cancel`, method: 'POST', data: { reason } });

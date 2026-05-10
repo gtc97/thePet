@@ -7,7 +7,7 @@ export class OrderController {
   async create(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const data = await orderService.create(req.user!.userId, req.body);
-      res.json(success(data, '下单成功，等待师傅接单'));
+      res.json(success(data, '下单成功，等待宠护师接单'));
     } catch (err) { next(err); }
   }
 
@@ -49,7 +49,7 @@ export class OrderController {
     } catch (err) { next(err); }
   }
 
-  // POST /orders/:id/accept — 师傅接单
+  // POST /orders/:id/accept — 宠护师接单
   async accept(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const data = await orderService.accept(parseInt(req.params.id), req.user!.userId);
@@ -57,7 +57,7 @@ export class OrderController {
     } catch (err) { next(err); }
   }
 
-  // POST /orders/:id/reject — 师傅拒单
+  // POST /orders/:id/reject — 宠护师拒单
   async reject(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const data = await orderService.reject(parseInt(req.params.id), req.user!.userId, req.body.reason);
@@ -73,11 +73,43 @@ export class OrderController {
     } catch (err) { next(err); }
   }
 
-  // POST /orders/:id/complete — 完成服务
+  // POST /orders/:id/pay — 宠主确认付款
+  async pay(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const data = await orderService.payOrder(parseInt(req.params.id), req.user!.userId, req.body.paymentProof);
+      res.json(success(data, '已确认付款'));
+    } catch (err) { next(err); }
+  }
+
+  // POST /orders/:id/complete — 宠护师完成服务
   async complete(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const data = await orderService.completeService(parseInt(req.params.id), req.user!.userId, req.body);
-      res.json(success(data, '服务已完成，请验收'));
+      res.json(success(data, '服务已完成，等待宠主验收'));
+    } catch (err) { next(err); }
+  }
+
+  // POST /orders/:id/apply — 宠护师申请接单
+  async apply(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      await orderService.applyOrder(parseInt(req.params.id), req.user!.userId);
+      res.json(success(null, '已申请，等待宠主确认'));
+    } catch (err) { next(err); }
+  }
+
+  // POST /orders/:id/select — 宠主选择宠护师
+  async select(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const data = await orderService.selectProvider(parseInt(req.params.id), req.user!.userId, req.body.providerId);
+      res.json(success(data, '已选择宠护师'));
+    } catch (err) { next(err); }
+  }
+
+  // POST /orders/:id/confirm — 宠主确认验收
+  async confirm(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const data = await orderService.confirmOrder(parseInt(req.params.id), req.user!.userId);
+      res.json(success(data, '已确认验收，订单完成'));
     } catch (err) { next(err); }
   }
 

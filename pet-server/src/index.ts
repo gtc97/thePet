@@ -1,11 +1,13 @@
+import http from 'http';
 import app from './app';
 import { config } from './config';
 import { connectRedis } from './config/redis';
 import prisma from './config/database';
 import { adminService } from './modules/admin/admin.service';
+import { initSocket } from './config/socket';
 
 async function bootstrap() {
-  // Verify database connection
+  // 验证数据库连接
   try {
     await prisma.$connect();
     console.log('[Database] Connected');
@@ -14,14 +16,20 @@ async function bootstrap() {
     process.exit(1);
   }
 
-  // 初始化默认管理员（首次运行自动创建）
+  // 初始化默认管理员
   await adminService.seedAdmin();
 
-  // Connect Redis (non-blocking)
+  // 连接Redis（非阻塞）
   await connectRedis();
 
-  // Start server
-  app.listen(config.port, () => {
+  // 创建HTTP Server
+  const server = http.createServer(app);
+
+  // 挂载Socket.IO
+  initSocket(server);
+
+  // 启动服务
+  server.listen(config.port, () => {
     console.log(`[Server] Running at http://localhost:${config.port}`);
     console.log(`[Server] Environment: ${config.nodeEnv}`);
   });
@@ -29,7 +37,7 @@ async function bootstrap() {
 
 bootstrap().catch(console.error);
 
-// Graceful shutdown
+// 优雅退出
 process.on('SIGTERM', async () => {
   console.log('[Server] Shutting down...');
   await prisma.$disconnect();
