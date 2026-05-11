@@ -174,7 +174,19 @@ src/
 - 字符集：utf8mb4
 - 详见 [db-schema.md](./db-schema.md)
 
-## 六、安全设计
+## 六、开发环境
+
+| 依赖 | 版本 | 路径 | 说明 |
+|------|------|------|------|
+| Node.js | v22.14.0 | D:\nvm\v22.14.0 | 通过 nvm 管理 |
+| MySQL | 8.0+ | D:\mysql\ | 数据库 |
+| Redis | 7.x | 待部署 | 缓存（优雅降级） |
+| Java JDK | 21.0.11 LTS | D:\Java\jdk-21\ | 运维工具链 |
+| Python | 3.14.3 | D:\python\ | 脚本工具链 |
+
+详细安装步骤见 [dev-env.md](./dev-env.md)，生产部署见 [deploy.md](./deploy.md)。
+
+## 七、安全设计
 
 | 层面 | 措施 |
 |---|---|
