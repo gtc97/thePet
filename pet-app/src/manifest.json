@@ -45,5 +45,14 @@
     },
     "h5" : {
         "routerMode" : "history"
-    }
+    },
+	"app-harmony" : {
+	    "package" : "com.petApp.app",
+	    "versionName" : "1.0.0",
+	    "versionCode" : 100,
+	    "uniStatistics" : {
+	        "enable" : false
+	    }
+	},
+    "vueVersion" : "3"
 }

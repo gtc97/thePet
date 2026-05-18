@@ -1,0 +1,10 @@
+{
+    "version": "1.0",
+    "configurations": [
+        {
+            "type": "uni-app:app-harmony",
+            "distPathDev": "/Users/gengtianchen/harmony-project-dev",
+            "distPathBuild": "/Users/gengtianchen/harmony-project-build"
+        }
+    ]
+}
