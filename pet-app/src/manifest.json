@@ -47,12 +47,30 @@
         "routerMode" : "history"
     },
 	"app-harmony" : {
-	    "package" : "com.petApp.app",
-	    "versionName" : "1.0.0",
-	    "versionCode" : 100,
-	    "uniStatistics" : {
-	        "enable" : false
-	    }
+		"package" : "com.petApp.app",
+		"versionName" : "1.0.0",
+		"versionCode" : 100,
+		"uniStatistics" : {
+			"enable" : false
+		},
+		"distribute" : {
+			"compatibleVersion" : 3,
+			"minCompatibleVersion" : 3,
+			"permissions" : [
+				"ohos.permission.LOCATION",
+				"ohos.permission.LOCATION_IN_USE",
+				"ohos.permission.CAMERA",
+				"ohos.permission.WRITE_MEDIA_IMAGES"
+			]
+		},
+		"metadata" : {
+			"items" : [
+				{
+					"name" : "CLIENT_ID",
+					"value" : "your_client_id"
+				}
+			]
+		}
 	},
     "vueVersion" : "3"
 }

@@ -89,8 +89,13 @@ function handleChooseLocation() {
     },
   });
   // #endif
+  // #ifdef APP-HARMONY
+  uni.showToast({ title: '请在地图上长按选择位置或手动输入地址', icon: 'none', duration: 2000 });
+  // #endif
   // #ifndef MP-WEIXIN
-  uni.showToast({ title: '请在微信小程序中使用', icon: 'none' });
+  // #ifndef APP-HARMONY
+  uni.showToast({ title: '请在微信小程序或鸿蒙APP中使用地图选点', icon: 'none' });
+  // #endif
   // #endif
 }
 

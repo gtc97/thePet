@@ -190,6 +190,15 @@ $border: #F5F0EA;
 
 /* ── 底部安全区 ── */
 .safe-bottom { height:env(safe-area-inset-bottom); min-height:20rpx; }
+.safe-bottom { 
+  height:constant(safe-area-inset-bottom); 
+  min-height:20rpx; 
+}
+.safe-bottom { 
+  height:env(safe-area-inset-bottom); 
+  min-height:20rpx; 
+  padding-bottom:env(safe-area-inset-bottom); 
+}
 
 /* ── 页面容器（统一页边距） ── */
 .page-container { padding:0 var(--gap-sm); }

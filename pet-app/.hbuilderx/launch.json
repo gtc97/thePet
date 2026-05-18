@@ -2,9 +2,20 @@
     "version": "1.0",
     "configurations": [
         {
+            "name": "鸿蒙开发版",
             "type": "uni-app:app-harmony",
-            "distPathDev": "/Users/gengtianchen/harmony-project-dev",
-            "distPathBuild": "/Users/gengtianchen/harmony-project-build"
+            "platform": "app-harmony",
+            "cwd": "${workspaceRoot}",
+            "distPathDev": "${workspaceRoot}/dist/dev/app-harmony",
+            "distPathBuild": "${workspaceRoot}/dist/build/app-harmony"
+        },
+        {
+            "name": "鸿蒙正式版",
+            "type": "uni-app:app-harmony",
+            "platform": "app-harmony",
+            "cwd": "${workspaceRoot}",
+            "buildType": "release",
+            "distPathBuild": "${workspaceRoot}/dist/build/app-harmony"
         }
     ]
 }
