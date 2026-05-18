@@ -4,177 +4,117 @@
 
 ```
 ┌─────────────────────────────────────────────┐
-│                 Nginx (HTTPS)                │
+│                 Nginx (:80)                  │
 │  静态资源 + API反向代理 + WebSocket代理       │
 ├──────────────┬──────────────────────────────┤
 │  /api/*      │  /admin/*     │  /uploads/*  │
 ▼              ▼               ▼              │
 ┌──────────┐ ┌──────────────┐                 │
 │ 后端API   │ │ 管理端SPA     │   静态文件     │
-│ PM2集群   │ │ 纯静态文件    │   直读         │
-│ :3000     │ │ dist/        │   uploads/     │
+│ PM2       │ │ 纯静态文件    │   直读         │
+│ :5000     │ │ dist/        │   uploads/     │
 └──────┬────┘ └──────────────┘                 │
        │                                       │
   ┌────┼────┬──────────┐                       │
   ▼    ▼    ▼          ▼                       │
 ┌────┐ ┌──┐ ┌──────┐ ┌──────┐                 │
 │MySQL│ │Redis│ │本地  │ │第三方│                │
-│ 8.0 │ │ 7.x │ │存储  │ │API   │                │
+│ 5.7 │ │ 7.x │ │存储  │ │API   │                │
 └────┘ └──┘  └──────┘ └──────┘                 │
 └─────────────────────────────────────────────┘
 ```
 
-## 二、服务器要求
+## 二、生产服务器信息
 
-| 项目 | 最低配置 | 推荐配置 |
-|------|----------|----------|
-| CPU | 2核 | 4核 |
-| 内存 | 4GB | 8GB |
-| 磁盘 | 40GB SSD | 80GB SSD |
-| 系统 | CentOS 7+ / Ubuntu 20.04+ / Windows Server |
-| 带宽 | 5Mbps | 10Mbps+ |
+| 项目 | 值 |
+|------|-----|
+| **服务器 IP** | 39.96.17.9 |
+| **SSH 端口** | 22 |
+| **操作系统** | Alibaba Cloud Linux 3 (x86_64) |
+| **CPU / 内存** | 2核 / 3.5GB |
+| **磁盘** | 49GB SSD（可用 36GB） |
+| **宝塔面板** | http://39.96.17.9:8888 |
 
-## 三、环境安装
+### 服务端口
 
-### 3.1 Node.js
+| 服务 | 端口 | 说明 |
+|------|------|------|
+| Nginx | 80 | 入口，反向代理 |
+| 后端 API | 5000 | PM2 管理，仅本地访问 |
+| MySQL | 3306 | 仅本地访问 |
+| Redis | 6379 | 仅本地访问（可选） |
 
-```bash
-# Linux/macOS 使用 nvm
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-nvm install 22
-nvm use 22
-nvm alias default 22
+## 三、已部署路径
 
-# Windows 使用 nvm-windows
-# https://github.com/coreybutler/nvm-windows
-nvm install 22.14.0
-nvm use 22.14.0
-```
+| 组件 | 路径 |
+|------|------|
+| 项目根目录 | `/opt/thepet/` |
+| 后端服务 | `/opt/thepet/pet-server/` |
+| 管理端 | `/opt/thepet/pet-admin/` |
+| 上传文件 | `/opt/thepet/pet-server/uploads/` |
+| 环境变量 | `/opt/thepet/pet-server/.env` |
+| Nginx 配置 | `/etc/nginx/conf.d/thepet.conf` |
+| PM2 进程 | `thepet-api` |
 
-### 3.2 MySQL 8.0
+## 四、访问地址
 
-```bash
-# Ubuntu
-apt install mysql-server-8.0
+| 入口 | 地址 |
+|------|------|
+| **API 接口** | http://39.96.17.9/api/v1/ |
+| **管理后台** | http://39.96.17.9/admin/ |
+| **宝塔面板** | http://39.96.17.9:8888 |
 
-# CentOS
-yum install mysql-server
+## 五、数据库信息
 
-# 创建数据库
-mysql -u root -p
-CREATE DATABASE thepet CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'thepet'@'localhost' IDENTIFIED BY 'strong_password';
-GRANT ALL PRIVILEGES ON thepet.* TO 'thepet'@'localhost';
-FLUSH PRIVILEGES;
-```
+| 项目 | 值 |
+|------|-----|
+| 数据库名 | thepet |
+| 用户名 | thepet |
+| 密码 | ThEpet2026! |
+| Root 密码 | ThEpet2026! |
+| 字符集 | utf8mb4 |
 
-### 3.3 Redis
-
-```bash
-# Ubuntu
-apt install redis-server
-
-# CentOS
-yum install redis
-
-# 或 Docker
-docker run -d --name redis \
-  -p 127.0.0.1:6379:6379 \
-  --restart always \
-  redis:7-alpine redis-server --requirepass your_redis_password
-```
-
-### 3.4 Nginx
+## 六、环境变量配置
 
 ```bash
-# Ubuntu
-apt install nginx
+# /opt/thepet/pet-server/.env
 
-# CentOS
-yum install nginx
+# 数据库
+DATABASE_URL="mysql://thepet:ThEpet2026!@localhost:3306/thepet"
+
+# JWT
+JWT_SECRET="thepet-jwt-secret-2026-production-xK9mP2vL"
+JWT_EXPIRES_IN="7d"
+JWT_REFRESH_EXPIRES_IN="30d"
+
+# Redis
+REDIS_URL="redis://localhost:6379"
+
+# 服务器
+PORT=5000
+NODE_ENV=production
+
+# 文件上传
+UPLOAD_DIR="./uploads"
+MAX_FILE_SIZE=10485760
+
+# 以下待配置
+SMS_ACCESS_KEY_ID=""
+SMS_ACCESS_KEY_SECRET=""
+WECHAT_APP_ID=""
+WECHAT_APP_SECRET=""
+WECHAT_PAY_MCH_ID=""
+WECHAT_PAY_API_KEY=""
+AMAP_API_KEY=""
 ```
 
-### 3.5 Java JDK 21（可选）
-
-部分运维脚本需要：
-```bash
-# 下载 Temurin JDK 21
-wget https://mirrors.tuna.tsinghua.edu.cn/Adoptium/21/jdk/x64/linux/OpenJDK21U-jdk_x64_linux_hotspot_21.0.11_10.tar.gz
-tar -xzf OpenJDK21U-jdk_x64_linux_hotspot_21.0.11_10.tar.gz -C /usr/local/
-# 配置 /etc/profile
-export JAVA_HOME=/usr/local/jdk-21.0.11+10
-export PATH=$JAVA_HOME/bin:$PATH
-```
-
-### 3.6 Python 3.12+（可选）
-
-```bash
-# Ubuntu
-apt install python3 python3-pip
-
-# 验证
-python3 --version
-```
-
-### 3.7 PM2（进程管理）
-
-```bash
-npm install -g pm2
-```
-
-## 四、项目部署
-
-### 4.1 获取代码
-
-```bash
-git clone <repo-url> /opt/thepet
-cd /opt/thepet
-```
-
-### 4.2 后端部署 (pet-server)
-
-```bash
-cd pet-server
-npm install --production
-
-# 配置环境变量
-cp ../.env.example .env
-vim .env
-# 按生产环境修改：
-# NODE_ENV=production
-# DATABASE_URL=mysql://thepet:strong_password@localhost:3306/thepet
-# JWT_SECRET=<生成一个随机密钥>
-# REDIS_URL=redis://:your_redis_password@localhost:6379
-
-# 数据库迁移
-npx prisma migrate deploy
-npx prisma generate
-
-# TypeScript 编译
-npm run build
-
-# PM2 启动
-pm2 start dist/index.js --name pet-server --instances 2
-pm2 save
-pm2 startup  # 开机自启
-```
-
-### 4.3 管理端部署 (pet-admin)
-
-```bash
-cd pet-admin
-npm install --production
-npm run build
-# 产出 dist/ 目录
-```
-
-### 4.4 Nginx 配置
+## 七、Nginx 配置
 
 ```nginx
-# /etc/nginx/sites-available/thepet
+# /etc/nginx/conf.d/thepet.conf
 server {
     listen 80;
-    server_name your-domain.com;
+    server_name 39.96.17.9;
 
     # 管理端静态文件
     location /admin {
@@ -192,7 +132,7 @@ server {
 
     # API 反向代理
     location /api/ {
-        proxy_pass http://127.0.0.1:3000;
+        proxy_pass http://127.0.0.1:5000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -201,7 +141,7 @@ server {
 
     # WebSocket 代理
     location /socket.io/ {
-        proxy_pass http://127.0.0.1:3000;
+        proxy_pass http://127.0.0.1:5000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -209,214 +149,112 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
     }
 
-    # Gzip
+    # Gzip 压缩
     gzip on;
     gzip_types text/plain text/css application/json application/javascript text/xml;
     gzip_min_length 1024;
+
+    # 默认首页
+    location / {
+        return 200 '{"service":"thepet-api","status":"running"}';
+        add_header Content-Type application/json;
+    }
 }
 ```
 
-启用配置：
+## 八、常用运维命令
+
+### 服务管理
+
 ```bash
-ln -s /etc/nginx/sites-available/thepet /etc/nginx/sites-enabled/
-nginx -t
+# 查看 PM2 状态
+pm2 status
+
+# 重启后端服务
+pm2 reload thepet-api
+
+# 查看日志
+pm2 logs thepet-api --lines 50
+
+# 重载 Nginx
 systemctl reload nginx
 ```
 
-### 4.5 SSL/HTTPS 配置
+### 更新部署
 
 ```bash
-# 使用 Certbot 获取免费 SSL 证书
-apt install certbot python3-certbot-nginx
-certbot --nginx -d your-domain.com
+# 1. 上传新代码到服务器
+scp thepet-deploy.tar.gz root@39.96.17.9:/opt/
+
+# 2. 解压覆盖
+ssh root@39.96.17.9
+tar -xzf /opt/thepet-deploy.tar.gz -C /opt/thepet/
+
+# 3. 更新后端
+cd /opt/thepet/pet-server
+npm install
+npx prisma migrate deploy
+npx prisma generate
+npm run build
+pm2 reload thepet-api
+
+# 4. 更新管理端
+cd /opt/thepet/pet-admin
+npm install
+npx vite build
 ```
 
-## 五、用户端发布
-
-### 微信小程序
-
-1. 用 HBuilderX 打开 `pet-app` 目录
-2. 发行 → 微信小程序
-3. 登录微信小程序后台上传代码
-4. 提交审核
-
-### Android APP
-
-1. HBuilderX → 发行 → 原生App-云打包
-2. 配置签名证书
-3. 上传到各大应用商店
-
-### iOS APP
-
-1. HBuilderX → 发行 → 原生App-云打包
-2. 需 Apple Developer 账号和证书
-
-## 六、环境变量生产配置
+### 数据库备份
 
 ```bash
-# pet-server/.env 生产环境配置
+# 手动备份
+mysqldump -u thepet -p'ThEpet2026!' thepet | gzip > /opt/backups/thepet_$(date +%Y%m%d).sql.gz
 
-# 数据库
-DATABASE_URL="mysql://thepet:strong_password@localhost:3306/thepet"
-
-# JWT - 务必修改
-JWT_SECRET="$(openssl rand -base64 64)"
-JWT_EXPIRES_IN="7d"
-JWT_REFRESH_EXPIRES_IN="30d"
-
-# Redis - 务必设置密码
-REDIS_URL="redis://:strong_redis_password@localhost:6379"
-
-# 短信服务（阿里云）
-SMS_ACCESS_KEY_ID="your-aliyun-ak"
-SMS_ACCESS_KEY_SECRET="your-aliyun-sk"
-SMS_SIGN_NAME="thePet"
-SMS_TEMPLATE_CODE="SMS_XXXXXXXXX"
-
-# 微信小程序
-WECHAT_APP_ID="wx_xxxx"
-WECHAT_APP_SECRET="xxxx"
-
-# 微信支付
-WECHAT_PAY_MCH_ID=""
-WECHAT_PAY_API_KEY=""
-WECHAT_PAY_CERT_PATH="/opt/thepet/certs/apiclient_cert.p12"
-
-# 高德地图
-AMAP_API_KEY="your-amap-key"
-
-# 文件上传
-UPLOAD_DIR="./uploads"
-MAX_FILE_SIZE=10485760
-
-# 服务器
-PORT=3000
-NODE_ENV=production
-```
-
-## 七、安全加固清单
-
-| 项目 | 措施 |
-|------|------|
-| 数据库 | 独立用户、强密码、仅本地访问 |
-| Redis | 设置密码、绑定127.0.0.1 |
-| JWT | 随机生成Secret、合理过期时间 |
-| HTTPS | 全站SSL、HSTS头 |
-| 防火墙 | 仅开放80/443端口 |
-| 文件上传 | 限制大小10MB、限制类型 |
-| 日志 | 定期清理、敏感信息脱敏 |
-| 依赖 | 定期 `npm audit`、及时更新 |
-| 备份 | 每日数据库备份（见下方） |
-
-## 八、备份策略
-
-### 数据库每日备份
-
-```bash
-# /opt/scripts/backup-db.sh
-#!/bin/bash
-BACKUP_DIR="/opt/backups/thepet"
-DATE=$(date +%Y%m%d_%H%M%S)
-mkdir -p $BACKUP_DIR
-
-mysqldump -u thepet -p'strong_password' thepet \
-  | gzip > "$BACKUP_DIR/thepet_$DATE.sql.gz"
-
-# 保留最近30天
-find $BACKUP_DIR -name "*.sql.gz" -mtime +30 -delete
-```
-
-设置 Cron：
-```bash
-# 每天凌晨3点备份
-0 3 * * * /opt/scripts/backup-db.sh >> /var/log/backup.log 2>&1
-```
-
-### 文件备份
-
-```bash
-# 每周同步 uploads 到备份目录
-0 2 * * 0 rsync -av /opt/thepet/pet-server/uploads/ /opt/backups/uploads/
-```
-
-## 九、监控与日志
-
-### PM2 监控
-
-```bash
-pm2 monit              # 实时监控
-pm2 logs pet-server    # 查看日志
-pm2 status             # 查看状态
-```
-
-### 日志轮转
-
-```bash
-# PM2 日志自动轮转
-pm2 install pm2-logrotate
-pm2 set pm2-logrotate:max_size 50M
-pm2 set pm2-logrotate:retain 30
+# 恢复
+gunzip < /opt/backups/thepet_20260518.sql.gz | mysql -u thepet -p'ThEpet2026!' thepet
 ```
 
 ### 健康检查
 
 ```bash
-# API 健康检查
-curl http://localhost:3000/api/health
+# API 检查
+curl -s http://localhost:5000/api/v1/auth/login-by-code -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"phone":"13800138000","code":"888888"}'
 
-# 在 Nginx 中配置健康检查端点
-# /api/health → 200 OK = 服务正常
+# Nginx 检查
+curl -s http://localhost/
+
+# 管理端检查
+curl -s -o /dev/null -w "%{http_code}" http://localhost/admin/
 ```
 
-## 十、更新部署流程
+## 九、待配置项
 
-```bash
-# 1. 拉取最新代码
-cd /opt/thepet
-git pull origin master
+| 项目 | 当前状态 | 配置方式 |
+|------|----------|----------|
+| Redis | 未安装（优雅降级） | `yum install redis && systemctl start redis` |
+| SSL/HTTPS | 未配置 | 域名备案后使用 Certbot |
+| 短信服务 | 模拟实现 | 阿里云短信 SDK |
+| 微信小程序 | 未配置 | .env 填写 AppID/Secret |
+| 微信支付 | 未配置 | .env 填写商户号/密钥 |
+| 高德地图 | 未配置 | .env 填写 API Key |
 
-# 2. 更新后端
-cd pet-server
-npm install --production
-npx prisma migrate deploy
-npx prisma generate
-npm run build
-pm2 reload pet-server
+## 十、安全建议
 
-# 3. 更新管理端
-cd ../pet-admin
-npm install --production
-npm run build
-
-# 4. 验证
-curl http://localhost:3000/api/health
-```
-
-## 十一、常见运维操作
-
-```bash
-# 查看服务状态
-pm2 status
-
-# 重启服务
-pm2 reload pet-server
-
-# 查看实时日志
-pm2 logs pet-server --lines 100
-
-# 数据库连接检查
-npx prisma db pull --force  # 仅测试连接
-
-# Redis 连接检查
-redis-cli -a your_password ping
-
-# 磁盘空间检查
-df -h
-du -sh /opt/thepet/pet-server/uploads/
-```
+| 项目 | 措施 |
+|------|------|
+| SSH | 修改默认端口、禁用密码登录（改用密钥） |
+| MySQL | 仅本地访问、定期更换密码 |
+| 防火墙 | 仅开放 80/443/22 端口 |
+| 宝塔面板 | 修改默认端口、设置强密码 |
+| JWT Secret | 定期更换 |
+| 文件上传 | 限制大小和类型 |
+| 日志 | 定期清理 PM2 和 Nginx 日志 |
 
 ---
 
-**文档版本**: v1.0  
-**生成日期**: 2026-05-10  
+**文档版本**: v2.0  
+**生成日期**: 2026-05-18  
+**部署服务器**: 39.96.17.9 (阿里云)  
 **适用范围**: thePet 后端/管理端生产部署
